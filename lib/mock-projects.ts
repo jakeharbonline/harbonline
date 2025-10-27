@@ -13,41 +13,9 @@ export interface Project {
   published: boolean;
 }
 
-// Mock data
-export const mockProjects: Project[] = [
-  {
-    id: 'p001',
-    title: 'E-Commerce Platform for Local Retailer',
-    description: 'Built a modern e-commerce website with Shopify integration, custom product filters, and seamless checkout experience. Increased online sales by 45% in the first quarter.',
-    image: '/images/projects/project1.jpg',
-    url: 'https://example-store.com',
-    tags: ['E-Commerce', 'Shopify', 'Web Design'],
-    featured: true,
-    published: true,
-    createdAt: '2024-10-15T10:00:00Z',
-  },
-  {
-    id: 'p002',
-    title: 'Custom Booking System for Salon',
-    description: 'Developed a custom appointment booking system with automated reminders, staff management, and client portal. Reduced no-shows by 60%.',
-    image: '/images/projects/project2.jpg',
-    tags: ['Custom Software', 'Web Application', 'Booking System'],
-    featured: true,
-    published: true,
-    createdAt: '2024-09-20T10:00:00Z',
-  },
-  {
-    id: 'p003',
-    title: 'Professional Website Redesign',
-    description: 'Complete redesign and rebuild of a consulting firm website. Modern design, improved navigation, and optimized for SEO. Page load time reduced from 8s to under 2s.',
-    image: '/images/projects/project3.jpg',
-    url: 'https://example-consulting.co.uk',
-    tags: ['Web Design', 'Web Development', 'SEO'],
-    featured: false,
-    published: true,
-    createdAt: '2024-08-10T10:00:00Z',
-  },
-];
+// Mock data - cleaned for production
+// Real projects will be stored in Firebase
+export const mockProjects: Project[] = [];
 
 // Helper functions for mock data management
 export function getProjects(): Project[] {

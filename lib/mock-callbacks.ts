@@ -7,24 +7,9 @@ export interface Callback {
   notes?: string;
 }
 
-// Mock data store
-let mockCallbacks: Callback[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    phone: '07123 456789',
-    status: 'pending',
-    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-  },
-  {
-    id: '2',
-    name: 'Michael Brown',
-    phone: '07234 567890',
-    status: 'contacted',
-    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    notes: 'Left voicemail, waiting for response',
-  },
-];
+// Mock data store - cleaned for production
+// Real callback requests will be stored in Firebase
+let mockCallbacks: Callback[] = [];
 
 export function getCallbacks(): Callback[] {
   return mockCallbacks.sort((a, b) =>
