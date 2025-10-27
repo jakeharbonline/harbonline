@@ -154,7 +154,7 @@ export default function HomePage() {
       <Header />
       <main>
         {/* Hero Section */}
-        <Section background="primary" spacing="loose">
+        <Section background="primary" spacing="normal">
           <VantaBackground />
           <div className="relative">
             {/* Floating Accent Orb (1 of 2 above-the-fold elements) */}
@@ -164,10 +164,10 @@ export default function HomePage() {
               aria-hidden="true"
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center relative z-10">
               <div className="p-6 rounded-2xl bg-black/40 backdrop-blur-sm">
                 <MotionReveal>
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-6">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight mb-5">
                     Building Websites That
                     <br />
                     <span className="gradient-text">Help Businesses Grow</span>
@@ -175,7 +175,7 @@ export default function HomePage() {
                 </MotionReveal>
 
               <MotionReveal delay={0.1}>
-                <p className="text-lg md:text-xl text-text-secondary leading-relaxed mb-8">
+                <p className="text-lg md:text-xl text-text-secondary leading-relaxed mb-6">
                   I'm Jake, a freelance web developer. I build fast, professional websites that help businesses grow and get more customers online.
                 </p>
               </MotionReveal>
