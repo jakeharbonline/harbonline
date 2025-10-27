@@ -1,33 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Phone, Star } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Phone, Star, Loader2 } from 'lucide-react';
+import { AuthProvider, useAuth } from '@/lib/auth-context';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [password, setPassword] = useState('');
+  const { user, loading, signOut } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
-  // Simple password auth placeholder (replace with Firebase auth later)
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === 'admin123') {
-      setIsAuthenticated(true);
-    } else {
-      alert('Incorrect password');
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !user && pathname !== '/admin/login') {
+      router.push('/admin/login');
     }
-  };
+  }, [user, loading, pathname, router]);
 
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    setPassword('');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   const navItems = [
@@ -39,55 +37,29 @@ export default function AdminLayout({
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];
 
-  // Login screen
-  if (!isAuthenticated) {
+  // Show loading screen while checking auth
+  if (loading) {
     return (
-      <div className="min-h-screen bg-bg-primary flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-bg-secondary border border-white/10 rounded-2xl p-8 shadow-2xl">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Admin Login</h1>
-              <p className="text-text-secondary text-sm">
-                Enter password to access admin panel
-              </p>
-              <p className="text-text-tertiary text-xs mt-2">
-                (Temporary auth - will use Firebase after deployment)
-              </p>
-            </div>
-
-            <form onSubmit={handleLogin}>
-              <div className="mb-6">
-                <label htmlFor="password" className="block text-sm font-medium mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter admin password"
-                  className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
-                  autoFocus
-                />
-                <p className="text-xs text-text-tertiary mt-2">
-                  Demo password: admin123
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full px-6 py-3 bg-accent-primary hover:bg-accent-primary-hover text-white font-semibold rounded-lg transition-colors"
-              >
-                Login
-              </button>
-            </form>
-          </div>
+      <div className="min-h-screen bg-bg-primary flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-accent-primary animate-spin mx-auto mb-4" />
+          <p className="text-text-secondary">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Admin panel
+  // Show login page for unauthenticated users (handled by redirect, but this is a safeguard)
+  if (!user && pathname !== '/admin/login') {
+    return null;
+  }
+
+  // Allow login page to render without admin layout
+  if (pathname === '/admin/login') {
+    return <>{children}</>;
+  }
+
+  // Admin panel layout (only shown when authenticated)
   return (
     <div className="min-h-screen bg-bg-primary">
       {/* Mobile Header */}
@@ -113,6 +85,11 @@ export default function AdminLayout({
             <div className="p-6 border-b border-white/10 hidden md:block">
               <h1 className="text-2xl font-bold text-gradient">harbonline</h1>
               <p className="text-sm text-text-secondary mt-1">Admin Panel</p>
+              {user?.email && (
+                <p className="text-xs text-text-tertiary mt-2 truncate">
+                  {user.email}
+                </p>
+              )}
             </div>
 
             {/* Navigation */}
@@ -165,5 +142,17 @@ export default function AdminLayout({
         </main>
       </div>
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <AuthProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </AuthProvider>
   );
 }
