@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Render email template to HTML
-    const emailHtml = render(<ContactConfirmationEmail name={name} email={email} message={message} />);
+    const emailHtml = await render(<ContactConfirmationEmail name={name} email={email} message={message} />);
 
     // Send email
     const { data, error } = await resend.emails.send({

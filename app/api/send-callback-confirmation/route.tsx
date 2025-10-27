@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Render email template to HTML
-    const emailHtml = render(<CallbackConfirmationEmail callback={callback} />);
+    const emailHtml = await render(<CallbackConfirmationEmail callback={callback} />);
 
     // Send email
     const { data, error } = await resend.emails.send({
