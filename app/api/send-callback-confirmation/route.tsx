@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: Config.resend.fromEmail,
       to: callback.email,
-      replyTo: Config.resend.replyTo,
       subject: 'Callback Request Confirmed - Harbonline',
       html: customerEmailHtml,
     });

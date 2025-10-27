@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: Config.resend.fromEmail,
       to: quote.email,
-      replyTo: Config.resend.replyTo,
       subject: 'Quote Request Received - Harbonline',
       html: customerEmailHtml,
     });
