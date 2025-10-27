@@ -95,14 +95,11 @@ export const floatingOrb = prefersReducedMotion
         y: [12, 0, 12],
       },
       transition: {
-        opacity: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
-        y: {
-          duration: 8,
-          repeat: Infinity,
-          ease: [0.4, 0, 0.6, 1]
-        }
+        duration: 8,
+        repeat: Infinity,
+        ease: "easeInOut" as any
       }
-    } as const;
+    };
 
 /**
  * Gentle parallax scroll effect
