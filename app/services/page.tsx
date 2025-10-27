@@ -14,6 +14,7 @@ import {
   ArrowRight,
   HelpCircle,
   CheckCircle,
+  ChevronDown,
 } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -214,8 +215,9 @@ export default function ServicesPage() {
                   Get a Quote
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
-                <Button href="/contact" variant="secondary" size="lg">
-                  Contact Me
+                <Button href="#services" variant="secondary" size="lg">
+                  Learn More
+                  <ChevronDown className="ml-2 w-5 h-5" />
                 </Button>
               </div>
             </MotionReveal>
@@ -223,7 +225,7 @@ export default function ServicesPage() {
         </Section>
 
         {/* Services Grid */}
-        <Section background="primary" spacing="normal">
+        <Section id="services" background="primary" spacing="normal">
           <MotionReveal>
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-semibold mb-4">What I Can Do For You</h2>
