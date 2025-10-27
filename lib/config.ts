@@ -61,6 +61,15 @@ export const Config = {
   },
 
   /**
+   * Resend Email Service Configuration
+   */
+  resend: {
+    apiKey: env.RESEND_API_KEY,
+    fromEmail: 'Harbonline <noreply@harbonline.co.uk>',
+    replyTo: 'jake@harbonline.co.uk',
+  },
+
+  /**
    * Feature Flags
    * Toggle experimental features by environment
    */
@@ -71,6 +80,8 @@ export const Config = {
     enableVerboseLogging: env.APP_ENV !== 'production',
     // Enable Firebase integration
     enableFirebase: !!env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    // Enable Resend email service
+    enableResend: !!env.RESEND_API_KEY,
   },
 } as const;
 

@@ -58,8 +58,41 @@ export default function QuotePage() {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSubmitted(true);
+
+    // Prepare quote data
+    const quoteData = {
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone || undefined,
+      company: formData.company || undefined,
+      projectType: formData.projectType,
+      projectDescription: formData.description,
+      timeline: formData.timeline,
+      budget: formData.budget,
+      requirements: {
+        design: formData.design,
+        development: formData.development,
+        ecommerce: formData.ecommerce,
+        customSoftware: formData.customSoftware,
+        seo: formData.seo,
+        maintenance: formData.maintenance,
+      },
+      hasContent: formData.hasContent,
+    };
+
+    // Send confirmation email
+    try {
+      await fetch('/api/send-quote-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quoteData),
+      });
+    } catch (error) {
+      console.error('Failed to send confirmation email:', error);
+    }
+
     setTimeout(() => {
       setSubmitted(false);
       setStep(1);

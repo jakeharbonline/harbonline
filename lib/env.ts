@@ -30,6 +30,9 @@ const envSchema = z.object({
 
   // Google Search Console
   NEXT_PUBLIC_SEARCH_CONSOLE_VERIFICATION: z.string().optional(),
+
+  // Resend Email Service (server-only)
+  RESEND_API_KEY: z.string().optional(),
 });
 
 /**
@@ -60,6 +63,9 @@ function validateEnv() {
 
     // Search Console
     NEXT_PUBLIC_SEARCH_CONSOLE_VERIFICATION: process.env.NEXT_PUBLIC_SEARCH_CONSOLE_VERIFICATION,
+
+    // Resend
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
   });
 
   if (!parsed.success) {

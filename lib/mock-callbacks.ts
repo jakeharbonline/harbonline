@@ -1,7 +1,9 @@
 export interface Callback {
   id: string;
   name: string;
+  email: string;
   phone: string;
+  preferredTime: string;
   status: 'pending' | 'contacted' | 'completed';
   createdAt: string;
   notes?: string;
