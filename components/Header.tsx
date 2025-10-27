@@ -1,12 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setServicesOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setServicesOpen(false);
+    }, 300); // 300ms delay before closing
+  };
 
   const navLinks = [
     { href: '/projects', label: 'Work' },
@@ -47,8 +62,8 @@ export function Header() {
             {/* Services Dropdown */}
             <div
               className="relative"
-              onMouseEnter={() => setServicesOpen(true)}
-              onMouseLeave={() => setServicesOpen(false)}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
             >
               <button
                 className="text-sm font-medium transition-colors text-text-secondary hover:text-text-primary flex items-center gap-1"
@@ -60,16 +75,18 @@ export function Header() {
               </button>
 
               {servicesOpen && (
-                <div className="absolute top-full left-0 mt-2 w-56 bg-bg-primary/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl py-2 z-50">
-                  {serviceLinks.map((service) => (
-                    <Link
-                      key={service.href}
-                      href={service.href}
-                      className="block px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
-                    >
-                      {service.label}
-                    </Link>
-                  ))}
+                <div className="absolute top-full left-0 pt-2 w-56 z-50">
+                  <div className="bg-bg-primary/95 backdrop-blur-xl border border-white/20 rounded-lg shadow-2xl py-2">
+                    {serviceLinks.map((service) => (
+                      <Link
+                        key={service.href}
+                        href={service.href}
+                        className="block px-4 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-white/10 transition-colors"
+                      >
+                        {service.label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
