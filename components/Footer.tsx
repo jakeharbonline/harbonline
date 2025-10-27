@@ -11,6 +11,13 @@ export function Footer() {
       { id: 'website-dev', href: '/services/website-development', label: 'Business Websites' },
       { id: 'web-apps', href: '/services/web-applications-bespoke-software', label: 'Custom Tools & Apps' },
     ],
+    locations: [
+      { id: 'chichester', href: '/locations/chichester', label: 'Chichester' },
+      { id: 'brighton', href: '/locations/brighton', label: 'Brighton' },
+      { id: 'bognor', href: '/locations/bognor-regis', label: 'Bognor Regis' },
+      { id: 'littlehampton', href: '/locations/littlehampton', label: 'Littlehampton' },
+      { id: 'worthing', href: '/locations/worthing', label: 'Worthing' },
+    ],
     company: [
       { id: 'about', href: '#', label: 'About Me', disabled: true },
       { id: 'contact', href: '#contact', label: "Let's Chat" },
@@ -30,7 +37,7 @@ export function Footer() {
   return (
     <footer className="bg-bg-secondary border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12">
           {/* Brand */}
           <div>
             <Link href="/" className="text-xl font-semibold">
@@ -46,6 +53,23 @@ export function Footer() {
             <h3 className="text-sm font-semibold text-text-primary mb-4">What I Do</h3>
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
+                <li key={link.id}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-text-secondary hover:text-text-primary transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Locations */}
+          <div>
+            <h3 className="text-sm font-semibold text-text-primary mb-4">Areas Served</h3>
+            <ul className="space-y-3">
+              {footerLinks.locations.map((link) => (
                 <li key={link.id}>
                   <Link
                     href={link.href}

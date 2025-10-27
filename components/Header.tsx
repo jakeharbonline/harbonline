@@ -65,14 +65,15 @@ export function Header() {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              <button
+              <Link
+                href="/services"
                 className="text-sm font-medium transition-colors text-text-secondary hover:text-text-primary flex items-center gap-1"
                 aria-expanded={servicesOpen}
                 aria-haspopup="true"
               >
                 Services
                 <ChevronDown className={`w-4 h-4 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
-              </button>
+              </Link>
 
               {servicesOpen && (
                 <div className="absolute top-full left-0 pt-2 w-56 z-50">
