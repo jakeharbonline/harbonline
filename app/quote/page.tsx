@@ -316,7 +316,8 @@ export default function QuotePage() {
                             className="w-full px-4 py-3 bg-bg-secondary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
                           >
                             <option value="">Select budget range...</option>
-                            <option value="under-2k">Under £2,000</option>
+                            <option value="under-1k">Under £1,000</option>
+                            <option value="1k-2k">£1,000 - £2,000</option>
                             <option value="2k-5k">£2,000 - £5,000</option>
                             <option value="5k-10k">£5,000 - £10,000</option>
                             <option value="10k-25k">£10,000 - £25,000</option>
