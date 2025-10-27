@@ -201,7 +201,7 @@ export function CallbackConfirmationEmail({ callback }: { callback: Callback }) 
           Hi {callback.name},
         </p>
         <p style={emailStyles.text}>
-          Thanks for requesting a callback. I've received your request and will call you at <strong>{callback.phone}</strong>.
+          Thanks for requesting a callback. I've received your request and will call you on <strong>{callback.phone}</strong>.
         </p>
 
         <div style={{ margin: '32px 0', padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
@@ -231,6 +231,124 @@ export function CallbackConfirmationEmail({ callback }: { callback: Callback }) 
         <p style={emailStyles.footerText}>
           Harbonline | Professional Web Development<br />
           jake@harbonline.co.uk | harbonline.co.uk
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Admin Notification Emails
+export function AdminQuoteNotification({ quote }: { quote: QuoteRequest }) {
+  return (
+    <div style={emailStyles.container}>
+      <div style={emailStyles.header}>
+        <h1 style={emailStyles.heading}>New Quote Request!</h1>
+      </div>
+      <div style={emailStyles.body}>
+        <p style={emailStyles.text}>
+          You have a new quote request from <strong>{quote.name}</strong>.
+        </p>
+
+        <div style={{ margin: '32px 0', padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
+          <div style={emailStyles.label}>Contact Information</div>
+          <div style={emailStyles.value}>
+            Name: {quote.name}<br />
+            Email: {quote.email}<br />
+            {quote.phone && `Phone: ${quote.phone}`}<br />
+            {quote.company && `Company: ${quote.company}`}
+          </div>
+
+          <div style={emailStyles.label}>Project Type</div>
+          <div style={emailStyles.value}>{quote.projectType}</div>
+
+          <div style={emailStyles.label}>Description</div>
+          <div style={emailStyles.value}>{quote.description}</div>
+
+          {quote.timeline && (
+            <>
+              <div style={emailStyles.label}>Timeline</div>
+              <div style={emailStyles.value}>{quote.timeline}</div>
+            </>
+          )}
+
+          {quote.budget && (
+            <>
+              <div style={emailStyles.label}>Budget</div>
+              <div style={emailStyles.value}>{quote.budget}</div>
+            </>
+          )}
+        </div>
+
+        <p style={emailStyles.text}>
+          View and manage this quote in your admin panel at harbonline.co.uk/admin
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function AdminContactNotification({ name, email, message }: { name: string; email: string; message: string }) {
+  return (
+    <div style={emailStyles.container}>
+      <div style={emailStyles.header}>
+        <h1 style={emailStyles.heading}>New Contact Message!</h1>
+      </div>
+      <div style={emailStyles.body}>
+        <p style={emailStyles.text}>
+          You have a new message from <strong>{name}</strong>.
+        </p>
+
+        <div style={{ margin: '32px 0', padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
+          <div style={emailStyles.label}>Contact Information</div>
+          <div style={emailStyles.value}>
+            Name: {name}<br />
+            Email: {email}
+          </div>
+
+          <div style={emailStyles.label}>Message</div>
+          <div style={{ ...emailStyles.value, whiteSpace: 'pre-wrap' as const }}>{message}</div>
+        </div>
+
+        <p style={emailStyles.text}>
+          Reply directly to {email} to respond.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function AdminCallbackNotification({ callback }: { callback: Callback }) {
+  return (
+    <div style={emailStyles.container}>
+      <div style={emailStyles.header}>
+        <h1 style={emailStyles.heading}>New Callback Request!</h1>
+      </div>
+      <div style={emailStyles.body}>
+        <p style={emailStyles.text}>
+          You have a new callback request from <strong>{callback.name}</strong>.
+        </p>
+
+        <div style={{ margin: '32px 0', padding: '20px', backgroundColor: '#ffffff', borderRadius: '8px' }}>
+          <div style={emailStyles.label}>Contact Information</div>
+          <div style={emailStyles.value}>
+            Name: {callback.name}<br />
+            Email: {callback.email}<br />
+            Phone: <strong>{callback.phone}</strong>
+          </div>
+
+          <div style={emailStyles.label}>Preferred Time</div>
+          <div style={emailStyles.value}>{callback.preferredTime}</div>
+
+          {callback.notes && (
+            <>
+              <div style={emailStyles.label}>Notes</div>
+              <div style={emailStyles.value}>{callback.notes}</div>
+            </>
+          )}
+        </div>
+
+        <p style={emailStyles.text}>
+          View and manage this callback in your admin panel at harbonline.co.uk/admin
         </p>
       </div>
     </div>

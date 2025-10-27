@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getResend } from '@/lib/resend';
 import { Config } from '@/lib/config';
-import { ContactConfirmationEmail } from '@/lib/email-templates';
+import { ContactConfirmationEmail, AdminContactNotification } from '@/lib/email-templates';
 import { render } from '@react-email/render';
 
 export async function POST(request: NextRequest) {
@@ -26,16 +26,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Render email template to HTML
-    const emailHtml = await render(<ContactConfirmationEmail name={name} email={email} message={message} />);
+    // Render customer confirmation email
+    const customerEmailHtml = await render(<ContactConfirmationEmail name={name} email={email} message={message} />);
 
-    // Send email
+    // Send customer confirmation email
     const { data, error } = await resend.emails.send({
       from: Config.resend.fromEmail,
       to: email,
       replyTo: Config.resend.replyTo,
       subject: 'Message Received - Harbonline',
-      html: emailHtml,
+      html: customerEmailHtml,
     });
 
     if (error) {
@@ -44,6 +44,20 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to send confirmation email' },
         { status: 500 }
       );
+    }
+
+    // Render and send admin notification email
+    try {
+      const adminEmailHtml = await render(<AdminContactNotification name={name} email={email} message={message} />);
+      await resend.emails.send({
+        from: Config.resend.fromEmail,
+        to: Config.resend.adminEmail,
+        subject: 'New Contact Message - Harbonline',
+        html: adminEmailHtml,
+      });
+    } catch (adminError) {
+      console.error('Error sending admin notification:', adminError);
+      // Don't fail the request if admin email fails
     }
 
     return NextResponse.json({

@@ -67,6 +67,7 @@ export const Config = {
     apiKey: env.RESEND_API_KEY,
     fromEmail: 'Harbonline <noreply@harbonline.co.uk>',
     replyTo: 'jake@harbonline.co.uk',
+    adminEmail: 'jake@harbonline.co.uk',
   },
 
   /**

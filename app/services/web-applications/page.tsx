@@ -4,7 +4,7 @@ import { Section } from '@/components/Section';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { MotionReveal } from '@/components/MotionReveal';
-import { Database, Users, BarChart, Lock, Code, TrendingUp, ArrowRight, Calendar, Calculator, FileText, Package, Wrench } from 'lucide-react';
+import { Database, Users, BarChart, Lock, Code, TrendingUp, ArrowRight, Calendar, Calculator, FileText, Package, Wrench, ChevronDown } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -108,16 +108,26 @@ export default function WebApplicationsPage() {
             </MotionReveal>
 
             <MotionReveal delay={0.2}>
-              <Button href="/contact" size="lg">
-                Discuss Your Project
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Button href="/contact" size="lg">
+                  Discuss Your Project
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <Button
+                  href="#examples"
+                  variant="secondary"
+                  size="lg"
+                >
+                  Learn More
+                  <ChevronDown className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
             </MotionReveal>
           </div>
         </Section>
 
         {/* Software Examples Section */}
-        <Section background="primary" spacing="normal">
+        <Section id="examples" background="primary" spacing="normal">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-semibold mb-4">What I Can Build</h2>
             <p className="text-text-secondary max-w-2xl mx-auto">
