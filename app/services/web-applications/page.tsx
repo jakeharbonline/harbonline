@@ -118,14 +118,12 @@ export default function WebApplicationsPage() {
 
         {/* Software Examples Section */}
         <Section background="primary" spacing="normal">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">What I Can Build</h2>
-              <p className="text-text-secondary max-w-2xl mx-auto">
-                These are just examples. If your business needs something specific, I can build it.
-              </p>
-            </div>
-          </MotionReveal>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4">What I Can Build</h2>
+            <p className="text-text-secondary max-w-2xl mx-auto">
+              These are just examples. If your business needs something specific, I can build it.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {softwareExamples.map((example, index) => {

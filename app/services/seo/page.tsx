@@ -79,14 +79,12 @@ export default function SEOPage() {
 
         {/* Benefits Section */}
         <Section background="primary" spacing="normal">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Why SEO Matters</h2>
-              <p className="text-text-secondary max-w-2xl mx-auto">
-                Most people find businesses through search engines. If you're not showing up, you're missing out on customers.
-              </p>
-            </div>
-          </MotionReveal>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4">Why SEO Matters</h2>
+            <p className="text-text-secondary max-w-2xl mx-auto">
+              Most people find businesses through search engines. If you're not showing up, you're missing out on customers.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {benefits.map((benefit, index) => {

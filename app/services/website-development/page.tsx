@@ -98,14 +98,12 @@ export default function WebsiteDevelopmentPage() {
 
         {/* Problem �' Solution Section */}
         <Section background="primary" spacing="normal">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Common Challenges We Solve</h2>
-              <p className="text-text-secondary max-w-2xl mx-auto">
-                Many websites struggle with performance, accessibility, and SEO. We build sites that excel in all three.
-              </p>
-            </div>
-          </MotionReveal>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-semibold mb-4">Common Challenges We Solve</h2>
+            <p className="text-text-secondary max-w-2xl mx-auto">
+              Many websites struggle with performance, accessibility, and SEO. We build sites that excel in all three.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-12">
             {problems.map((problem, index) => {
