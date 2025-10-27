@@ -1,0 +1,15 @@
+# Robots.txt for Harbonline
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Block admin pages
+Disallow: /admin
+Disallow: /admin/
+
+# Block API routes
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://harbonline.co.uk/sitemap.xml

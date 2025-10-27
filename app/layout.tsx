@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@/components/Analytics";
+import { LocalBusinessSchema, OrganizationSchema, WebSiteSchema } from "@/components/StructuredData";
 import { Config } from "@/lib/config";
 import "./globals.css";
 
@@ -107,6 +108,32 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-GB" className={inter.variable}>
+      <head>
+        <LocalBusinessSchema
+          data={{
+            name: 'Harbonline',
+            description: 'Professional web design, development, and SEO services in West Sussex. Custom websites, e-commerce solutions, and web applications.',
+            url: 'https://harbonline.co.uk',
+            email: 'jake@harbonline.co.uk',
+            address: {
+              addressLocality: 'Chichester',
+              addressRegion: 'West Sussex',
+              addressCountry: 'GB',
+            },
+            areaServed: [
+              'Chichester',
+              'Bognor Regis',
+              'Littlehampton',
+              'Worthing',
+              'Brighton',
+              'West Sussex',
+            ],
+            priceRange: '££',
+          }}
+        />
+        <OrganizationSchema />
+        <WebSiteSchema />
+      </head>
       <body className="bg-bg-primary text-text-primary antialiased">
         <Analytics />
         {children}
