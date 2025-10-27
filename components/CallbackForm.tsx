@@ -69,7 +69,7 @@ export function CallbackForm() {
           value={formData.name}
           onChange={handleChange}
           required
-          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
           placeholder="John Smith"
         />
       </div>
@@ -85,7 +85,7 @@ export function CallbackForm() {
           value={formData.email}
           onChange={handleChange}
           required
-          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
           placeholder="john@example.com"
         />
       </div>
@@ -101,7 +101,7 @@ export function CallbackForm() {
           value={formData.phone}
           onChange={handleChange}
           required
-          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
           placeholder="07340 917384"
         />
       </div>
@@ -116,7 +116,7 @@ export function CallbackForm() {
           value={formData.preferredTime}
           onChange={handleChange}
           required
-          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
         >
           <option value="">Select a time...</option>
           <option value="Morning (9am-12pm)">Morning (9am-12pm)</option>
@@ -136,7 +136,7 @@ export function CallbackForm() {
           value={formData.notes}
           onChange={handleChange}
           rows={3}
-          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
+          className="w-full px-4 py-3 rounded-lg border border-border bg-background-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-accent-primary"
           placeholder="Anything I should know before calling?"
         />
       </div>
