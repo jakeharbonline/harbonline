@@ -5,7 +5,6 @@ import { Card } from '@/components/Card';
 import { MotionReveal } from '@/components/MotionReveal';
 import { Button } from '@/components/Button';
 import { CallbackForm } from '@/components/CallbackForm';
-import { ContactForm } from '@/components/ContactForm';
 import { Mail, Phone, MapPin, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -63,8 +62,12 @@ export default function ContactPage() {
             </MotionReveal>
 
             <MotionReveal delay={0.2}>
-              <div className="mt-8">
-                <Button href="/quote" size="lg">
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                <Button href="#contact-form" size="lg">
+                  Contact Form
+                  <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                <Button href="/quote" variant="secondary" size="lg">
                   Get a Quote
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
@@ -100,27 +103,15 @@ export default function ContactPage() {
               })}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              <MotionReveal delay={0.4}>
-                <Card variant="elevated">
-                  <h2 className="text-2xl font-semibold mb-4 text-center">Contact Form</h2>
-                  <p className="text-text-secondary mb-6 text-center">
-                    Send me a message and I'll get back to you within 1 business day.
-                  </p>
-                  <ContactForm />
-                </Card>
-              </MotionReveal>
-
-              <MotionReveal delay={0.5}>
-                <Card variant="elevated">
-                  <h2 className="text-2xl font-semibold mb-4 text-center">Request a Callback</h2>
-                  <p className="text-text-secondary mb-6 text-center">
-                    Prefer to chat? I'll call you back as soon as possible.
-                  </p>
-                  <CallbackForm />
-                </Card>
-              </MotionReveal>
-            </div>
+            <MotionReveal delay={0.4}>
+              <Card variant="elevated" className="max-w-2xl mx-auto" id="contact-form">
+                <h2 className="text-2xl font-semibold mb-4 text-center">Request a Callback</h2>
+                <p className="text-text-secondary mb-6 text-center">
+                  Enter your details and I'll call you back as soon as possible.
+                </p>
+                <CallbackForm />
+              </Card>
+            </MotionReveal>
           </div>
         </Section>
 
