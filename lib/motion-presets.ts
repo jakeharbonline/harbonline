@@ -28,7 +28,7 @@ export const fadeInUp = (size: 'sm' | 'md' = 'sm') => {
       : { opacity: 1, y: 0 },
     transition: {
       duration: 0.3,
-      ease: 'easeOut'
+      ease: 'easeOut' as any
     }
   };
 };
@@ -41,7 +41,7 @@ export const fadeIn = {
   animate: { opacity: 1 },
   transition: {
     duration: 0.25,
-    ease: 'easeOut'
+    ease: 'easeOut' as any
   }
 };
 
@@ -55,7 +55,7 @@ export const scaleIn = prefersReducedMotion
       animate: { opacity: 1, scale: 1 },
       transition: {
         duration: 0.3,
-        ease: 'easeOut'
+        ease: 'easeOut' as any
       }
     };
 
@@ -122,7 +122,7 @@ export const cardHover = prefersReducedMotion
   : {
       whileHover: {
         y: -2,
-        transition: { duration: 0.2, ease: 'easeOut' }
+        transition: { duration: 0.2, ease: "easeOut" as any }
       }
     };
 
