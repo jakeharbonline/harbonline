@@ -68,10 +68,10 @@ export default function QuotePage() {
       phone: formData.phone || undefined,
       company: formData.company || undefined,
       projectType: formData.projectType,
-      projectDescription: formData.description,
+      description: formData.description,
       timeline: formData.timeline,
       budget: formData.budget,
-      requirements: {
+      services: {
         design: formData.design,
         development: formData.development,
         ecommerce: formData.ecommerce,

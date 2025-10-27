@@ -104,7 +104,7 @@ export function QuoteConfirmationEmail({ quote }: { quote: QuoteRequest }) {
           <div style={emailStyles.value}>{quote.projectType}</div>
 
           <div style={emailStyles.label}>Description</div>
-          <div style={emailStyles.value}>{quote.projectDescription}</div>
+          <div style={emailStyles.value}>{quote.description}</div>
 
           {quote.timeline && (
             <>
