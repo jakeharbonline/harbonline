@@ -7,7 +7,6 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { MotionReveal } from '@/components/MotionReveal';
 import { VantaBackground } from '@/components/VantaBackground';
-import { ReviewsCarousel } from '@/components/ReviewsCarousel';
 import { TrendingUp, Smartphone, Search, Users, CheckCircle, ArrowRight, Clock, MessageCircle, Calendar, Calculator, FileText, Lock, BarChart, Package } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -551,46 +550,6 @@ export default function HomePage() {
                 </div>
               </MotionReveal>
             ))}
-          </div>
-        </Section>
-
-        {/* Work Placeholder */}
-        <Section background="primary" spacing="normal" id="work">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Recent Work</h2>
-              <p className="text-text-secondary max-w-2xl mx-auto">
-                Case studies coming soon. For now, let's chat about what I can build for you.
-              </p>
-            </div>
-          </MotionReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {[1, 2, 3].map((i) => (
-              <MotionReveal key={i} delay={i * 0.1}>
-                <Card variant="elevated">
-                  <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                  <h3 className="text-xl font-semibold mb-2">Project #{i}</h3>
-                  <p className="text-text-secondary mb-4">
-                    Real client work with measurable results. Details coming soon.
-                  </p>
-                  <span className="text-accent-primary text-sm font-medium">Coming Soon →</span>
-                </Card>
-              </MotionReveal>
-            ))}
-          </div>
-        </Section>
-
-        {/* Testimonials */}
-        <Section background="primary" spacing="normal">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">What People Say</h2>
-            </div>
-          </MotionReveal>
-
-          <div className="max-w-5xl mx-auto">
-            <ReviewsCarousel />
           </div>
         </Section>
 
