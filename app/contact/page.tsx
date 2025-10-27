@@ -103,15 +103,17 @@ export default function ContactPage() {
               })}
             </div>
 
-            <MotionReveal delay={0.4}>
-              <Card variant="elevated" className="max-w-2xl mx-auto" id="contact-form">
-                <h2 className="text-2xl font-semibold mb-4 text-center">Request a Callback</h2>
-                <p className="text-text-secondary mb-6 text-center">
-                  Enter your details and I'll call you back as soon as possible.
-                </p>
-                <CallbackForm />
-              </Card>
-            </MotionReveal>
+            <div id="contact-form">
+              <MotionReveal delay={0.4}>
+                <Card variant="elevated" className="max-w-2xl mx-auto">
+                  <h2 className="text-2xl font-semibold mb-4 text-center">Request a Callback</h2>
+                  <p className="text-text-secondary mb-6 text-center">
+                    Enter your details and I'll call you back as soon as possible.
+                  </p>
+                  <CallbackForm />
+                </Card>
+              </MotionReveal>
+            </div>
           </div>
         </Section>
 
