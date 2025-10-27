@@ -26,7 +26,7 @@ export function MotionReveal({ children, delay = 0, className = '' }: MotionReve
       transition: {
         duration: prefersReducedMotion ? 0 : 0.5,
         delay: prefersReducedMotion ? 0 : delay,
-        ease: 'easeOut',
+        ease: 'easeOut' as any,
       },
     },
   };
