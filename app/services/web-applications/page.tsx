@@ -301,53 +301,6 @@ export default function WebApplicationsPage() {
           </div>
         </Section>
 
-        {/* Related Work Section */}
-        <Section background="primary" spacing="normal">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Example Projects</h2>
-              <p className="text-text-secondary max-w-2xl mx-auto">
-                Recent bespoke application work showcasing technical quality and problem-solving.
-              </p>
-            </div>
-          </MotionReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <MotionReveal delay={0.1}>
-              <Card variant="elevated">
-                <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Project Management Tool</h3>
-                <p className="text-text-secondary mb-4">
-                  Custom platform for task tracking, team collaboration, and deadline management.
-                </p>
-                <span className="text-accent-secondary text-sm font-medium">View Case Study →</span>
-              </Card>
-            </MotionReveal>
-
-            <MotionReveal delay={0.2}>
-              <Card variant="elevated">
-                <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Analytics Dashboard</h3>
-                <p className="text-text-secondary mb-4">
-                  Real-time data visualisation and reporting for business intelligence.
-                </p>
-                <span className="text-accent-secondary text-sm font-medium">View Case Study →</span>
-              </Card>
-            </MotionReveal>
-
-            <MotionReveal delay={0.3}>
-              <Card variant="elevated">
-                <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Client Portal</h3>
-                <p className="text-text-secondary mb-4">
-                  Secure platform for document sharing, invoicing, and client communication.
-                </p>
-                <span className="text-accent-secondary text-sm font-medium">View Case Study →</span>
-              </Card>
-            </MotionReveal>
-          </div>
-        </Section>
-
         {/* CTA Section */}
         <Section background="gradient" spacing="normal">
           <div className="max-w-3xl mx-auto text-center">

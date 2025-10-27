@@ -279,53 +279,6 @@ export default function WebsiteDevelopmentPage() {
           </div>
         </Section>
 
-        {/* Related Work Section */}
-        <Section background="primary" spacing="normal">
-          <MotionReveal>
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-semibold mb-4">Example Projects</h2>
-              <p className="text-text-secondary max-w-2xl mx-auto">
-                Recent website development work showcasing performance and attention to detail.
-              </p>
-            </div>
-          </MotionReveal>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            <MotionReveal delay={0.1}>
-              <Card variant="elevated">
-                <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Professional Services Site</h3>
-                <p className="text-text-secondary mb-4">
-                  Clean design, fast performance, and strong SEO for a growing consultancy.
-                </p>
-                <span className="text-accent-primary text-sm font-medium">View Case Study �'</span>
-              </Card>
-            </MotionReveal>
-
-            <MotionReveal delay={0.2}>
-              <Card variant="elevated">
-                <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">E-Commerce Platform</h3>
-                <p className="text-text-secondary mb-4">
-                  Bespoke online store with product filtering and seamless checkout.
-                </p>
-                <span className="text-accent-primary text-sm font-medium">View Case Study �'</span>
-              </Card>
-            </MotionReveal>
-
-            <MotionReveal delay={0.3}>
-              <Card variant="elevated">
-                <div className="aspect-video bg-gradient-mesh rounded-lg mb-4"></div>
-                <h3 className="text-xl font-semibold mb-2">Portfolio & Blog</h3>
-                <p className="text-text-secondary mb-4">
-                  Content-focused site with elegant typography and smooth navigation.
-                </p>
-                <span className="text-accent-primary text-sm font-medium">View Case Study �'</span>
-              </Card>
-            </MotionReveal>
-          </div>
-        </Section>
-
         {/* CTA Section */}
         <Section background="gradient" spacing="normal">
           <div className="max-w-3xl mx-auto text-center">
