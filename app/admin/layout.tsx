@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Phone } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Phone, Star } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -34,6 +34,7 @@ export default function AdminLayout({
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/quotes', label: 'Quote Requests', icon: FileText },
     { href: '/admin/callbacks', label: 'Callbacks', icon: Phone },
+    { href: '/admin/reviews', label: 'Reviews', icon: Star },
     { href: '/admin/projects', label: 'Projects', icon: FileText },
     { href: '/admin/settings', label: 'Settings', icon: Settings },
   ];

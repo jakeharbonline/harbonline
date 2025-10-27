@@ -7,6 +7,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { MotionReveal } from '@/components/MotionReveal';
 import { VantaBackground } from '@/components/VantaBackground';
+import { ReviewsCarousel } from '@/components/ReviewsCarousel';
 import { TrendingUp, Smartphone, Search, Users, CheckCircle, ArrowRight, Clock, MessageCircle, Calendar, Calculator, FileText, Lock, BarChart, Package } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -588,40 +589,8 @@ export default function HomePage() {
             </div>
           </MotionReveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
-            <MotionReveal delay={0.1}>
-              <Card variant="glass">
-                <blockquote>
-                  <p className="text-text-secondary leading-relaxed mb-4">
-                    "Working with Jake was straightforward and professional. The website performs excellently and we've seen a significant increase in qualified enquiries."
-                  </p>
-                  <footer className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-primary"></div>
-                    <div>
-                      <div className="text-sm font-medium">Sarah Mitchell</div>
-                      <div className="text-xs text-text-tertiary">Owner, Local Business</div>
-                    </div>
-                  </footer>
-                </blockquote>
-              </Card>
-            </MotionReveal>
-
-            <MotionReveal delay={0.2}>
-              <Card variant="glass">
-                <blockquote>
-                  <p className="text-text-secondary leading-relaxed mb-4">
-                    "Jake delivers honest,  quality work with clear communication throughout. He takes the time to understand requirements and provides practical solutions."
-                  </p>
-                  <footer className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-primary"></div>
-                    <div>
-                      <div className="text-sm font-medium">Tom Richardson</div>
-                      <div className="text-xs text-text-tertiary">Business Owner</div>
-                    </div>
-                  </footer>
-                </blockquote>
-              </Card>
-            </MotionReveal>
+          <div className="max-w-5xl mx-auto">
+            <ReviewsCarousel />
           </div>
         </Section>
 
