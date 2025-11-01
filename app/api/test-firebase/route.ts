@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getFirestoreAdmin } from '@/lib/firebase-admin';
+import { Config } from '@/lib/config';
 
 /**
  * GET /api/test-firebase
@@ -7,6 +8,15 @@ import { getFirestoreAdmin } from '@/lib/firebase-admin';
  */
 export async function GET() {
   try {
+    // Debug: Check environment variables (without exposing sensitive data)
+    const envCheck = {
+      projectId: !!Config.firebase.admin.projectId,
+      clientEmail: !!Config.firebase.admin.clientEmail,
+      privateKey: !!Config.firebase.admin.privateKey,
+      privateKeyLength: Config.firebase.admin.privateKey?.length || 0,
+      privateKeyStart: Config.firebase.admin.privateKey?.substring(0, 30) || 'undefined',
+    };
+
     const db = getFirestoreAdmin();
 
     if (!db) {
@@ -14,6 +24,7 @@ export async function GET() {
         success: false,
         error: 'Firestore Admin not initialized',
         message: 'Check that Firebase Admin environment variables are set',
+        debug: envCheck,
       });
     }
 
