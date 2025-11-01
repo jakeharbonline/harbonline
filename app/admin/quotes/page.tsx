@@ -1,21 +1,45 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, Filter, ArrowRight, Clock, Mail, Phone, Building } from 'lucide-react';
-import { getQuotes } from '@/lib/mock-quotes';
 import type { QuoteRequest, QuoteStatus } from '@/lib/mock-quotes';
 
 export default function QuotesListPage() {
   const searchParams = useSearchParams();
   const filterParam = searchParams.get('filter');
 
-  const [quotes] = useState<QuoteRequest[]>(getQuotes());
+  const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<QuoteStatus | 'all'>(
     (filterParam as QuoteStatus) || 'all'
   );
+
+  // Fetch quotes from Firebase API
+  useEffect(() => {
+    async function fetchQuotes() {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/quotes');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch quotes');
+        }
+
+        const data = await response.json();
+        setQuotes(data.quotes || []);
+      } catch (error) {
+        console.error('Error fetching quotes:', error);
+        setQuotes([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchQuotes();
+  }, []);
 
   // Filter and search quotes
   const filteredQuotes = useMemo(() => {
@@ -125,9 +149,43 @@ export default function QuotesListPage() {
         Showing {filteredQuotes.length} of {quotes.length} quote{quotes.length !== 1 ? 's' : ''}
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <p className="text-text-secondary">Loading quotes...</p>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!loading && quotes.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-text-secondary mb-2">No quote requests yet</p>
+          <p className="text-sm text-text-tertiary">
+            Quote requests will appear here when customers submit the quote form
+          </p>
+        </div>
+      )}
+
+      {/* No Results State */}
+      {!loading && quotes.length > 0 && filteredQuotes.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-text-secondary mb-2">No quotes match your search</p>
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setStatusFilter('all');
+            }}
+            className="text-accent-primary hover:underline text-sm"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
+
       {/* Quotes List */}
-      <div className="space-y-4">
-        {filteredQuotes.map((quote) => (
+      {!loading && filteredQuotes.length > 0 && (
+        <div className="space-y-4">
+          {filteredQuotes.map((quote) => (
           <Link
             key={quote.id}
             href={`/admin/quotes/${quote.id}`}
@@ -197,21 +255,7 @@ export default function QuotesListPage() {
               </div>
             </div>
           </Link>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredQuotes.length === 0 && (
-        <div className="bg-bg-secondary border border-white/10 rounded-xl p-12 text-center">
-          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8 text-text-tertiary" />
-          </div>
-          <h3 className="text-lg font-semibold mb-2">No quotes found</h3>
-          <p className="text-text-secondary">
-            {searchQuery || statusFilter !== 'all'
-              ? 'Try adjusting your filters or search query'
-              : 'Quote requests will appear here when clients submit the form'}
-          </p>
+          ))}
         </div>
       )}
     </div>

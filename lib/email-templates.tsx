@@ -36,8 +36,9 @@ const emailStyles = {
     margin: '0',
     letterSpacing: '-0.01em',
   },
-  // Header with gradient
+  // Header with gradient (with fallback solid color for email clients)
   header: {
+    backgroundColor: '#6A00FF',
     background: 'linear-gradient(135deg, #6A00FF 0%, #9D4EDD 100%)',
     padding: '48px 40px',
     textAlign: 'center' as const,
@@ -50,7 +51,7 @@ const emailStyles = {
     lineHeight: '1.3',
   },
   subheading: {
-    color: 'rgba(255, 255, 255, 0.95)',
+    color: '#ffffff',
     fontSize: '16px',
     margin: '12px 0 0',
     lineHeight: '1.5',

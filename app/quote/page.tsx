@@ -90,6 +90,24 @@ export default function QuotePage() {
       hasContent: formData.hasContent,
     };
 
+    // Save quote to Firebase
+    try {
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quoteData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save quote');
+      }
+
+      const result = await response.json();
+      console.log('✅ Quote saved:', result.id);
+    } catch (error) {
+      console.error('❌ Failed to save quote:', error);
+    }
+
     // Send confirmation email
     try {
       await fetch('/api/send-quote-confirmation', {
