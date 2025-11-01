@@ -30,6 +30,11 @@ export default function QuoteDetailPage() {
   const [quotedAmount, setQuotedAmount] = useState('');
   const [saved, setSaved] = useState(false);
 
+  // Quote builder fields
+  const [estimatedHours, setEstimatedHours] = useState('');
+  const [hourlyRate, setHourlyRate] = useState('50');
+  const [breakdown, setBreakdown] = useState<{service: string, hours: number}[]>([]);
+
   // Fetch quote from Firebase
   useEffect(() => {
     async function fetchQuote() {
@@ -118,6 +123,66 @@ export default function QuoteDetailPage() {
     return services;
   };
 
+  // Calculate estimated hours based on services
+  const calculateEstimatedHours = () => {
+    if (!quote) return { total: 0, breakdown: [] };
+
+    const hourEstimates: {[key: string]: number} = {
+      design: 40,
+      development: 80,
+      ecommerce: 120,
+      customSoftware: 160,
+      seo: 20,
+      maintenance: 10,
+    };
+
+    const breakdown: {service: string, hours: number}[] = [];
+    let total = 0;
+
+    if (quote.services.design) {
+      breakdown.push({ service: 'Web Design', hours: hourEstimates.design });
+      total += hourEstimates.design;
+    }
+    if (quote.services.development) {
+      breakdown.push({ service: 'Web Development', hours: hourEstimates.development });
+      total += hourEstimates.development;
+    }
+    if (quote.services.ecommerce) {
+      breakdown.push({ service: 'E-Commerce Integration', hours: hourEstimates.ecommerce });
+      total += hourEstimates.ecommerce;
+    }
+    if (quote.services.customSoftware) {
+      breakdown.push({ service: 'Custom Software', hours: hourEstimates.customSoftware });
+      total += hourEstimates.customSoftware;
+    }
+    if (quote.services.seo) {
+      breakdown.push({ service: 'SEO Setup', hours: hourEstimates.seo });
+      total += hourEstimates.seo;
+    }
+    if (quote.services.maintenance) {
+      breakdown.push({ service: 'Maintenance & Support (monthly)', hours: hourEstimates.maintenance });
+      total += hourEstimates.maintenance;
+    }
+
+    return { total, breakdown };
+  };
+
+  // Auto-calculate on quote load
+  useEffect(() => {
+    if (quote) {
+      const { total, breakdown: calc } = calculateEstimatedHours();
+      setEstimatedHours(total.toString());
+      setBreakdown(calc);
+
+      // Auto-calculate quoted amount
+      const rate = parseFloat(hourlyRate) || 50;
+      const amount = total * rate;
+      if (!quotedAmount) {
+        setQuotedAmount(`£${amount.toLocaleString()}`);
+      }
+    }
+  }, [quote]);
+
   const generateQuotationDocument = () => {
     if (!quote) return;
 
@@ -190,9 +255,40 @@ export default function QuoteDetailPage() {
     </div>
   </div>
 
+  ${breakdown.length > 0 ? `
+  <div class="section">
+    <h2>Work Breakdown</h2>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+      <thead>
+        <tr style="border-bottom: 2px solid #f0f0f0;">
+          <th style="text-align: left; padding: 12px 8px; color: #666;">Service</th>
+          <th style="text-align: right; padding: 12px 8px; color: #666;">Estimated Hours</th>
+          <th style="text-align: right; padding: 12px 8px; color: #666;">Rate</th>
+          <th style="text-align: right; padding: 12px 8px; color: #666;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${breakdown.map(item => `
+          <tr style="border-bottom: 1px solid #f0f0f0;">
+            <td style="padding: 12px 8px;">${item.service}</td>
+            <td style="text-align: right; padding: 12px 8px;">${item.hours}h</td>
+            <td style="text-align: right; padding: 12px 8px;">£${hourlyRate}/hr</td>
+            <td style="text-align: right; padding: 12px 8px;">£${(item.hours * parseFloat(hourlyRate)).toLocaleString()}</td>
+          </tr>
+        `).join('')}
+        <tr style="font-weight: bold; background: #f9f9f9;">
+          <td style="padding: 12px 8px;" colspan="2">Total</td>
+          <td style="text-align: right; padding: 12px 8px;">${estimatedHours}h</td>
+          <td style="text-align: right; padding: 12px 8px; color: #6A00FF;">£${((parseFloat(estimatedHours) || 0) * (parseFloat(hourlyRate) || 0)).toLocaleString()}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  ` : ''}
+
   ${quotedAmount ? `
   <div class="amount">
-    <h3>Quoted Amount</h3>
+    <h3>Final Quoted Amount</h3>
     <p>${quotedAmount}</p>
   </div>
   ` : ''}
@@ -420,9 +516,56 @@ export default function QuoteDetailPage() {
                 </select>
               </div>
 
+              {/* Quote Builder */}
+              <div className="pt-4 border-t border-white/10">
+                <h3 className="text-sm font-semibold mb-3 text-accent-primary">Quote Calculator</h3>
+
+                {/* Hours Breakdown */}
+                <div className="mb-3">
+                  <label className="block text-xs font-medium mb-2 text-text-secondary">Estimated Hours Breakdown</label>
+                  <div className="space-y-2 bg-bg-tertiary/50 rounded-lg p-3">
+                    {breakdown.map((item, index) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span className="text-text-secondary">{item.service}</span>
+                        <span className="font-medium">{item.hours}h</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between text-sm font-semibold pt-2 border-t border-white/10">
+                      <span>Total Hours</span>
+                      <span className="text-accent-primary">{estimatedHours}h</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hourly Rate */}
+                <div className="mb-3">
+                  <label className="block text-xs font-medium mb-2 text-text-secondary">Hourly Rate</label>
+                  <input
+                    type="number"
+                    value={hourlyRate}
+                    onChange={(e) => {
+                      setHourlyRate(e.target.value);
+                      const hours = parseFloat(estimatedHours) || 0;
+                      const rate = parseFloat(e.target.value) || 0;
+                      setQuotedAmount(`£${(hours * rate).toLocaleString()}`);
+                    }}
+                    placeholder="50"
+                    className="w-full px-3 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none text-sm"
+                  />
+                </div>
+
+                {/* Calculated Total Preview */}
+                <div className="bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 border border-accent-primary/20 rounded-lg p-3">
+                  <div className="text-xs text-text-secondary mb-1">Calculated Amount</div>
+                  <div className="text-2xl font-bold text-accent-primary">
+                    £{((parseFloat(estimatedHours) || 0) * (parseFloat(hourlyRate) || 0)).toLocaleString()}
+                  </div>
+                </div>
+              </div>
+
               {/* Quoted Amount */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Quoted Amount</label>
+              <div className="pt-4">
+                <label className="block text-sm font-medium mb-2">Final Quoted Amount</label>
                 <input
                   type="text"
                   value={quotedAmount}
@@ -430,6 +573,7 @@ export default function QuoteDetailPage() {
                   placeholder="e.g. £5,000"
                   className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
                 />
+                <p className="text-xs text-text-secondary mt-1">You can override the calculated amount</p>
               </div>
 
               {/* Notes */}
