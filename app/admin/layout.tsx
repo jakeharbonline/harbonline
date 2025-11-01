@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Phone, Star, Loader2 } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, Menu, X, Phone, Star, Loader2, Receipt } from 'lucide-react';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
@@ -31,6 +31,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/quotes', label: 'Quote Requests', icon: FileText },
+    { href: '/admin/invoices', label: 'Invoices', icon: Receipt },
     { href: '/admin/callbacks', label: 'Callbacks', icon: Phone },
     { href: '/admin/reviews', label: 'Reviews', icon: Star },
     { href: '/admin/projects', label: 'Projects', icon: FileText },
