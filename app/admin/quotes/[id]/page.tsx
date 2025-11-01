@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { jsPDF } from 'jspdf';
 import {
   ArrowLeft,
   Mail,
@@ -188,146 +189,235 @@ export default function QuoteDetailPage() {
       year: 'numeric',
     });
 
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-    .header { display: flex; justify-between; align-items: start; margin-bottom: 40px; border-bottom: 3px solid #6A00FF; padding-bottom: 20px; }
-    .header h1 { color: #6A00FF; margin: 0; font-size: 32px; }
-    .header p { color: #666; margin: 5px 0 0; }
-    .header-right { text-align: right; }
-    .section { margin-bottom: 30px; }
-    .section h2 { color: #6A00FF; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
-    .info-grid { display: grid; grid-template-columns: 150px 1fr; gap: 10px; margin-bottom: 15px; }
-    .info-label { font-weight: 600; color: #666; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background: #f9f9f9; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #666; font-weight: 600; }
-    td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
-    .text-right { text-align: right; }
-    .summary { margin-top: 30px; }
-    .summary-table { width: 300px; margin-left: auto; }
-    .summary-table td { padding: 8px; }
-    .summary-table .total { font-size: 24px; font-weight: bold; color: #6A00FF; border-top: 2px solid #6A00FF; padding-top: 12px; }
-    .terms { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 30px; }
-    .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; color: #666; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div>
-      <h1>Harbonline</h1>
-      <p>Professional Web Development & Design</p>
-      <p style="margin-top: 10px; font-size: 14px;">jake@harbonline.co.uk | www.harbonline.co.uk</p>
-    </div>
-    <div class="header-right">
-      <h2 style="color: #6A00FF; margin: 0;">QUOTATION</h2>
-      <p style="margin: 5px 0 0; font-size: 14px;">Date: ${currentDate}</p>
-      ${validUntil ? `<p style="margin: 5px 0 0; font-size: 14px;">Valid Until: ${new Date(validUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>` : ''}
-    </div>
-  </div>
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const margin = 20;
+    let yPos = 20;
 
-  <div class="section">
-    <h2>Client Information</h2>
-    <div class="info-grid">
-      <div class="info-label">Name:</div>
-      <div>${clientName}</div>
-      ${clientCompany ? `<div class="info-label">Company:</div><div>${clientCompany}</div>` : ''}
-      <div class="info-label">Email:</div>
-      <div>${clientEmail}</div>
-      ${clientPhone ? `<div class="info-label">Phone:</div><div>${clientPhone}</div>` : ''}
-    </div>
-  </div>
+    // Harbonline Company Info Header
+    pdf.setFontSize(24);
+    pdf.setTextColor(106, 0, 255); // #6A00FF
+    pdf.text('Harbonline Ltd', margin, yPos);
 
-  <div class="section">
-    <h2>Project Overview</h2>
-    <div class="info-grid">
-      <div class="info-label">Project Type:</div>
-      <div style="text-transform: capitalize;">${quote.projectType.replace('-', ' ')}</div>
-      <div class="info-label">Timeline:</div>
-      <div style="text-transform: capitalize;">${quote.timeline.replace('-', ' to ')}</div>
-    </div>
-    <p style="margin-top: 15px;"><strong>Description:</strong></p>
-    <p style="white-space: pre-wrap;">${quote.description}</p>
-  </div>
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    yPos += 7;
+    pdf.text('17 Winston Close', margin, yPos);
+    yPos += 5;
+    pdf.text('Bognor Regis', margin, yPos);
+    yPos += 5;
+    pdf.text('PO21 5DE', margin, yPos);
+    yPos += 7;
+    pdf.text('jake@harbonline.co.uk | www.harbonline.co.uk', margin, yPos);
 
-  ${lineItems.length > 0 ? `
-  <div class="section">
-    <h2>Quote Breakdown</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Description</th>
-          <th class="text-right">Hours</th>
-          <th class="text-right">Rate</th>
-          <th class="text-right">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${lineItems.map(item => `
-          <tr>
-            <td>${item.description}</td>
-            <td class="text-right">${item.hours}h</td>
-            <td class="text-right">£${item.rate.toFixed(2)}/hr</td>
-            <td class="text-right">£${(item.hours * item.rate).toFixed(2)}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
+    // QUOTATION Title (top right)
+    pdf.setFontSize(20);
+    pdf.setTextColor(106, 0, 255);
+    pdf.text('QUOTATION', pageWidth - margin, 20, { align: 'right' });
 
-    <div class="summary">
-      <table class="summary-table">
-        <tr>
-          <td>Subtotal:</td>
-          <td class="text-right">£${subtotal.toFixed(2)}</td>
-        </tr>
-        ${discount > 0 ? `
-        <tr>
-          <td>Discount (${discountType === 'percentage' ? discount + '%' : '£' + discount}):</td>
-          <td class="text-right">-£${discountAmount.toFixed(2)}</td>
-        </tr>
-        ` : ''}
-        ${tax > 0 ? `
-        <tr>
-          <td>VAT (${tax}%):</td>
-          <td class="text-right">£${taxAmount.toFixed(2)}</td>
-        </tr>
-        ` : ''}
-        <tr>
-          <td class="total">Total:</td>
-          <td class="text-right total">£${total.toFixed(2)}</td>
-        </tr>
-      </table>
-    </div>
-  </div>
-  ` : ''}
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`Date: ${currentDate}`, pageWidth - margin, 28, { align: 'right' });
+    if (validUntil) {
+      const validDate = new Date(validUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      pdf.text(`Valid Until: ${validDate}`, pageWidth - margin, 34, { align: 'right' });
+    }
 
-  ${terms ? `
-  <div class="terms">
-    <h3 style="margin: 0 0 10px; color: #6A00FF;">Terms & Conditions</h3>
-    <p style="margin: 0; white-space: pre-wrap;">${terms}</p>
-  </div>
-  ` : ''}
+    // Line separator
+    yPos += 10;
+    pdf.setDrawColor(106, 0, 255);
+    pdf.setLineWidth(0.5);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 10;
 
-  <div class="footer">
-    <p>Harbonline | jake@harbonline.co.uk | www.harbonline.co.uk</p>
-    <p>Thank you for considering Harbonline for your project.</p>
-  </div>
-</body>
-</html>
-    `;
+    // Client Information
+    pdf.setFontSize(14);
+    pdf.setTextColor(106, 0, 255);
+    pdf.text('Client Information', margin, yPos);
+    yPos += 8;
 
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Quote_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    pdf.setFontSize(10);
+    pdf.setTextColor(60, 60, 60);
+    pdf.text('Name:', margin, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(clientName, margin + 40, yPos);
+    yPos += 6;
+
+    if (clientCompany) {
+      pdf.setTextColor(60, 60, 60);
+      pdf.text('Company:', margin, yPos);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(clientCompany, margin + 40, yPos);
+      yPos += 6;
+    }
+
+    pdf.setTextColor(60, 60, 60);
+    pdf.text('Email:', margin, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(clientEmail, margin + 40, yPos);
+    yPos += 6;
+
+    if (clientPhone) {
+      pdf.setTextColor(60, 60, 60);
+      pdf.text('Phone:', margin, yPos);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(clientPhone, margin + 40, yPos);
+      yPos += 6;
+    }
+
+    yPos += 5;
+
+    // Project Overview
+    pdf.setFontSize(14);
+    pdf.setTextColor(106, 0, 255);
+    pdf.text('Project Overview', margin, yPos);
+    yPos += 8;
+
+    pdf.setFontSize(10);
+    pdf.setTextColor(60, 60, 60);
+    pdf.text('Project Type:', margin, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(quote.projectType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()), margin + 40, yPos);
+    yPos += 6;
+
+    pdf.setTextColor(60, 60, 60);
+    pdf.text('Timeline:', margin, yPos);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(quote.timeline.replace('-', ' to ').replace(/\b\w/g, l => l.toUpperCase()), margin + 40, yPos);
+    yPos += 8;
+
+    pdf.setTextColor(60, 60, 60);
+    pdf.text('Description:', margin, yPos);
+    yPos += 5;
+    pdf.setTextColor(0, 0, 0);
+    const descLines = pdf.splitTextToSize(quote.description, pageWidth - (2 * margin));
+    pdf.text(descLines, margin, yPos);
+    yPos += (descLines.length * 5) + 8;
+
+    // Quote Breakdown (if line items exist)
+    if (lineItems.length > 0) {
+      if (yPos > 200) {
+        pdf.addPage();
+        yPos = 20;
+      }
+
+      pdf.setFontSize(14);
+      pdf.setTextColor(106, 0, 255);
+      pdf.text('Quote Breakdown', margin, yPos);
+      yPos += 8;
+
+      // Table headers
+      pdf.setFontSize(9);
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFillColor(249, 249, 249);
+      pdf.rect(margin, yPos - 5, pageWidth - (2 * margin), 8, 'F');
+      pdf.text('Description', margin + 2, yPos);
+      pdf.text('Hours', pageWidth - margin - 80, yPos);
+      pdf.text('Rate', pageWidth - margin - 50, yPos);
+      pdf.text('Amount', pageWidth - margin - 20, yPos, { align: 'right' });
+      yPos += 6;
+
+      // Table rows
+      pdf.setTextColor(0, 0, 0);
+      lineItems.forEach((item, idx) => {
+        if (yPos > 270) {
+          pdf.addPage();
+          yPos = 20;
+        }
+
+        pdf.text(item.description, margin + 2, yPos);
+        pdf.text(`${item.hours}h`, pageWidth - margin - 80, yPos);
+        pdf.text(`£${item.rate.toFixed(2)}/hr`, pageWidth - margin - 50, yPos);
+        pdf.text(`£${(item.hours * item.rate).toFixed(2)}`, pageWidth - margin - 2, yPos, { align: 'right' });
+        yPos += 6;
+
+        // Light divider line
+        pdf.setDrawColor(240, 240, 240);
+        pdf.setLineWidth(0.1);
+        pdf.line(margin, yPos - 1, pageWidth - margin, yPos - 1);
+      });
+
+      yPos += 5;
+
+      // Summary calculations
+      const summaryX = pageWidth - margin - 60;
+
+      pdf.setFontSize(10);
+      pdf.setTextColor(60, 60, 60);
+      pdf.text('Subtotal:', summaryX, yPos);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`£${subtotal.toFixed(2)}`, pageWidth - margin - 2, yPos, { align: 'right' });
+      yPos += 6;
+
+      if (discount > 0) {
+        pdf.setTextColor(60, 60, 60);
+        pdf.text(`Discount (${discountType === 'percentage' ? discount + '%' : '£' + discount}):`, summaryX, yPos);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`-£${discountAmount.toFixed(2)}`, pageWidth - margin - 2, yPos, { align: 'right' });
+        yPos += 6;
+      }
+
+      if (tax > 0) {
+        pdf.setTextColor(60, 60, 60);
+        pdf.text(`VAT (${tax}%):`, summaryX, yPos);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text(`£${taxAmount.toFixed(2)}`, pageWidth - margin - 2, yPos, { align: 'right' });
+        yPos += 6;
+      }
+
+      // Total line
+      pdf.setDrawColor(106, 0, 255);
+      pdf.setLineWidth(0.5);
+      pdf.line(summaryX - 5, yPos, pageWidth - margin, yPos);
+      yPos += 5;
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(106, 0, 255);
+      pdf.text('Total:', summaryX, yPos);
+      pdf.text(`£${total.toFixed(2)}`, pageWidth - margin - 2, yPos, { align: 'right' });
+      yPos += 10;
+    }
+
+    // Terms & Conditions
+    if (terms) {
+      if (yPos > 220) {
+        pdf.addPage();
+        yPos = 20;
+      }
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(106, 0, 255);
+      pdf.text('Terms & Conditions', margin, yPos);
+      yPos += 6;
+
+      pdf.setFontSize(9);
+      pdf.setTextColor(0, 0, 0);
+      const termsLines = pdf.splitTextToSize(terms, pageWidth - (2 * margin));
+      pdf.text(termsLines, margin, yPos);
+      yPos += (termsLines.length * 4) + 8;
+    }
+
+    // Footer
+    if (yPos > 250) {
+      pdf.addPage();
+      yPos = 20;
+    }
+
+    pdf.setDrawColor(240, 240, 240);
+    pdf.setLineWidth(0.3);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 8;
+
+    pdf.setFontSize(9);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('Harbonline Ltd | 17 Winston Close, Bognor Regis, PO21 5DE', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 4;
+    pdf.text('jake@harbonline.co.uk | www.harbonline.co.uk', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 5;
+    pdf.text('Thank you for considering Harbonline for your project.', pageWidth / 2, yPos, { align: 'center' });
+
+    // Save PDF
+    pdf.save(`Quote_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
   const getSelectedServices = () => {
@@ -410,13 +500,23 @@ export default function QuoteDetailPage() {
             <h1 className="text-3xl md:text-4xl font-bold mb-2">{quote.name}</h1>
             <p className="text-text-secondary">Quote Request Details</p>
           </div>
-          <span
-            className={`px-4 py-2 rounded-full text-sm font-medium border capitalize ${getStatusColor(
-              quote.status
-            )}`}
-          >
-            {quote.status}
-          </span>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                document.getElementById('quote-builder')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="px-4 py-2 bg-accent-primary hover:bg-accent-primary-hover text-white font-medium rounded-lg transition-colors"
+            >
+              Build Quote
+            </button>
+            <span
+              className={`px-4 py-2 rounded-full text-sm font-medium border capitalize ${getStatusColor(
+                quote.status
+              )}`}
+            >
+              {quote.status}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -538,7 +638,7 @@ export default function QuoteDetailPage() {
           </div>
 
           {/* QUOTE BUILDER */}
-          <div className="bg-bg-secondary border border-white/10 rounded-xl p-6">
+          <div id="quote-builder" className="bg-bg-secondary border border-white/10 rounded-xl p-6 scroll-mt-6">
             <h2 className="text-xl font-semibold mb-4">Quote Builder</h2>
 
             {/* Client Info (Editable) */}
