@@ -7,10 +7,11 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { MotionReveal } from '@/components/MotionReveal';
 import { CheckCircle, ArrowRight, Send } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function QuotePage() {
   const [step, setStep] = useState(1);
+  const formRef = useRef<HTMLDivElement>(null);
   const [formData, setFormData] = useState({
     // Step 1: Project Type
     projectType: '',
@@ -53,16 +54,16 @@ export default function QuotePage() {
   const handleNext = () => {
     if (step < totalSteps) {
       setStep(step + 1);
-      // Scroll to top of page
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll to form container
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
-      // Scroll to top of page
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll to form container
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -163,7 +164,7 @@ export default function QuotePage() {
           </div>
 
           {/* Quote Form */}
-          <div className="max-w-3xl mx-auto">
+          <div ref={formRef} className="max-w-3xl mx-auto">
             {!submitted ? (
               <>
                 {/* Progress Bar */}

@@ -1,14 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, TrendingUp, Clock, CheckCircle, XCircle, Eye, ArrowRight } from 'lucide-react';
-import { getQuotes, getQuoteStats } from '@/lib/mock-quotes';
 import type { QuoteRequest } from '@/lib/mock-quotes';
 
 export default function AdminDashboardPage() {
-  const [quotes] = useState<QuoteRequest[]>(getQuotes());
-  const stats = getQuoteStats();
+  const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch quotes from Firebase
+  useEffect(() => {
+    async function fetchQuotes() {
+      try {
+        const response = await fetch('/api/quotes');
+        const data = await response.json();
+        setQuotes(data.quotes || []);
+      } catch (error) {
+        console.error('Failed to fetch quotes:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchQuotes();
+  }, []);
+
+  // Calculate stats from fetched quotes
+  const stats = {
+    total: quotes.length,
+    new: quotes.filter(q => q.status === 'new').length,
+    reviewed: quotes.filter(q => q.status === 'reviewed').length,
+    quoted: quotes.filter(q => q.status === 'quoted').length,
+    accepted: quotes.filter(q => q.status === 'accepted').length,
+    declined: quotes.filter(q => q.status === 'declined').length,
+  };
 
   // Get recent quotes (last 5)
   const recentQuotes = [...quotes]
@@ -63,7 +88,9 @@ export default function AdminDashboardPage() {
             <span className="text-sm text-text-secondary">Total</span>
             <FileText className="w-5 h-5 text-text-tertiary" />
           </div>
-          <div className="text-3xl font-bold">{stats.total}</div>
+          <div className="text-3xl font-bold">
+            {loading ? '...' : stats.total}
+          </div>
         </div>
 
         <div className="bg-bg-secondary border border-blue-500/20 rounded-xl p-6">
@@ -71,7 +98,9 @@ export default function AdminDashboardPage() {
             <span className="text-sm text-text-secondary">New</span>
             <TrendingUp className="w-5 h-5 text-blue-400" />
           </div>
-          <div className="text-3xl font-bold text-blue-400">{stats.new}</div>
+          <div className="text-3xl font-bold text-blue-400">
+            {loading ? '...' : stats.new}
+          </div>
         </div>
 
         <div className="bg-bg-secondary border border-yellow-500/20 rounded-xl p-6">
@@ -79,7 +108,9 @@ export default function AdminDashboardPage() {
             <span className="text-sm text-text-secondary">Reviewed</span>
             <Eye className="w-5 h-5 text-yellow-400" />
           </div>
-          <div className="text-3xl font-bold text-yellow-400">{stats.reviewed}</div>
+          <div className="text-3xl font-bold text-yellow-400">
+            {loading ? '...' : stats.reviewed}
+          </div>
         </div>
 
         <div className="bg-bg-secondary border border-purple-500/20 rounded-xl p-6">
@@ -87,7 +118,9 @@ export default function AdminDashboardPage() {
             <span className="text-sm text-text-secondary">Quoted</span>
             <Clock className="w-5 h-5 text-purple-400" />
           </div>
-          <div className="text-3xl font-bold text-purple-400">{stats.quoted}</div>
+          <div className="text-3xl font-bold text-purple-400">
+            {loading ? '...' : stats.quoted}
+          </div>
         </div>
 
         <div className="bg-bg-secondary border border-green-500/20 rounded-xl p-6">
@@ -95,7 +128,9 @@ export default function AdminDashboardPage() {
             <span className="text-sm text-text-secondary">Accepted</span>
             <CheckCircle className="w-5 h-5 text-green-400" />
           </div>
-          <div className="text-3xl font-bold text-green-400">{stats.accepted}</div>
+          <div className="text-3xl font-bold text-green-400">
+            {loading ? '...' : stats.accepted}
+          </div>
         </div>
 
         <div className="bg-bg-secondary border border-red-500/20 rounded-xl p-6">
@@ -103,7 +138,9 @@ export default function AdminDashboardPage() {
             <span className="text-sm text-text-secondary">Declined</span>
             <XCircle className="w-5 h-5 text-red-400" />
           </div>
-          <div className="text-3xl font-bold text-red-400">{stats.declined}</div>
+          <div className="text-3xl font-bold text-red-400">
+            {loading ? '...' : stats.declined}
+          </div>
         </div>
       </div>
 
