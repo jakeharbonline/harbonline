@@ -14,8 +14,8 @@ import {
   FileText,
   CheckCircle,
   Save,
+  Download,
 } from 'lucide-react';
-import { getQuoteById, updateQuoteStatus, updateQuoteNotes, updateQuotedAmount } from '@/lib/mock-quotes';
 import type { QuoteRequest, QuoteStatus } from '@/lib/mock-quotes';
 
 export default function QuoteDetailPage() {
@@ -24,30 +24,57 @@ export default function QuoteDetailPage() {
   const quoteId = params.id as string;
 
   const [quote, setQuote] = useState<QuoteRequest | null>(null);
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<QuoteStatus>('new');
   const [notes, setNotes] = useState('');
   const [quotedAmount, setQuotedAmount] = useState('');
   const [saved, setSaved] = useState(false);
 
+  // Fetch quote from Firebase
   useEffect(() => {
-    const fetchedQuote = getQuoteById(quoteId);
-    if (fetchedQuote) {
-      setQuote(fetchedQuote);
-      setStatus(fetchedQuote.status);
-      setNotes(fetchedQuote.notes || '');
-      setQuotedAmount(fetchedQuote.quotedAmount || '');
+    async function fetchQuote() {
+      try {
+        const response = await fetch(`/api/quotes/${quoteId}`);
+        const data = await response.json();
+
+        if (data.quote) {
+          setQuote(data.quote);
+          setStatus(data.quote.status);
+          setNotes(data.quote.notes || '');
+          setQuotedAmount(data.quote.quotedAmount || '');
+        }
+      } catch (error) {
+        console.error('Failed to fetch quote:', error);
+      } finally {
+        setLoading(false);
+      }
     }
+    fetchQuote();
   }, [quoteId]);
 
-  const handleSave = () => {
-    if (quote) {
-      updateQuoteStatus(quote.id, status);
-      updateQuoteNotes(quote.id, notes);
-      if (quotedAmount) {
-        updateQuotedAmount(quote.id, quotedAmount);
+  const handleSave = async () => {
+    if (!quote) return;
+
+    try {
+      const response = await fetch(`/api/quotes/${quoteId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status,
+          notes,
+          quotedAmount,
+        }),
+      });
+
+      if (response.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+
+        // Update local quote state
+        setQuote({ ...quote, status, notes, quotedAmount });
       }
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Failed to save quote:', error);
     }
   };
 
@@ -90,6 +117,127 @@ export default function QuoteDetailPage() {
     if (quote.services.maintenance) services.push('Maintenance & Support');
     return services;
   };
+
+  const generateQuotationDocument = () => {
+    if (!quote) return;
+
+    const services = getSelectedServices();
+    const currentDate = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    // Create HTML document
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .header { text-align: center; margin-bottom: 40px; border-bottom: 3px solid #6A00FF; padding-bottom: 20px; }
+    .header h1 { color: #6A00FF; margin: 0; font-size: 32px; }
+    .header p { color: #666; margin: 5px 0 0; }
+    .section { margin-bottom: 30px; }
+    .section h2 { color: #6A00FF; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+    .info-grid { display: grid; grid-template-columns: 150px 1fr; gap: 10px; margin-bottom: 15px; }
+    .info-label { font-weight: 600; color: #666; }
+    .services { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .service-tag { background: #f0e6ff; color: #6A00FF; padding: 6px 12px; border-radius: 4px; font-size: 14px; }
+    .amount { background: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0; }
+    .amount h3 { margin: 0 0 10px; color: #666; font-size: 16px; }
+    .amount p { font-size: 36px; font-weight: bold; color: #6A00FF; margin: 0; }
+    .description { background: #f9f9f9; padding: 20px; border-radius: 8px; white-space: pre-wrap; }
+    .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Harbonline</h1>
+    <p>Professional Web Development & Design</p>
+  </div>
+
+  <div class="section">
+    <h2>Quotation</h2>
+    <div class="info-grid">
+      <div class="info-label">Quote Date:</div>
+      <div>${currentDate}</div>
+      <div class="info-label">Client Name:</div>
+      <div>${quote.name}</div>
+      ${quote.company ? `<div class="info-label">Company:</div><div>${quote.company}</div>` : ''}
+      <div class="info-label">Email:</div>
+      <div>${quote.email}</div>
+      ${quote.phone ? `<div class="info-label">Phone:</div><div>${quote.phone}</div>` : ''}
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Project Overview</h2>
+    <div class="info-grid">
+      <div class="info-label">Project Type:</div>
+      <div style="text-transform: capitalize;">${quote.projectType.replace('-', ' ')}</div>
+      <div class="info-label">Timeline:</div>
+      <div style="text-transform: capitalize;">${quote.timeline.replace('-', ' to ')}</div>
+      <div class="info-label">Budget Range:</div>
+      <div style="text-transform: capitalize;">${quote.budget}</div>
+    </div>
+    <div style="margin-top: 15px;">
+      <div class="info-label">Services Required:</div>
+      <div class="services">
+        ${services.map(s => `<span class="service-tag">${s}</span>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  ${quotedAmount ? `
+  <div class="amount">
+    <h3>Quoted Amount</h3>
+    <p>${quotedAmount}</p>
+  </div>
+  ` : ''}
+
+  <div class="section">
+    <h2>Project Description</h2>
+    <div class="description">${quote.description}</div>
+  </div>
+
+  ${notes ? `
+  <div class="section">
+    <h2>Additional Notes</h2>
+    <div class="description">${notes}</div>
+  </div>
+  ` : ''}
+
+  <div class="footer">
+    <p>Harbonline | jake@harbonline.co.uk | www.harbonline.co.uk</p>
+    <p>This quotation is valid for 30 days from the date above.</p>
+  </div>
+</body>
+</html>
+    `;
+
+    // Create a blob and download
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Quotation_${quote.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 md:p-8 max-w-7xl mx-auto">
+        <div className="text-center py-12">
+          <p className="text-text-secondary">Loading quote...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!quote) {
     return (
@@ -312,6 +460,15 @@ export default function QuoteDetailPage() {
                     Save Changes
                   </>
                 )}
+              </button>
+
+              {/* Generate Quotation */}
+              <button
+                onClick={generateQuotationDocument}
+                className="w-full px-6 py-3 bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-90 text-white font-semibold rounded-lg transition-opacity flex items-center justify-center gap-2"
+              >
+                <Download className="w-5 h-5" />
+                Download Quotation
               </button>
 
               {/* Quick Actions */}
