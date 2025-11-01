@@ -31,9 +31,6 @@ export default function QuoteDetailPage() {
   const [notes, setNotes] = useState('');
   const [saved, setSaved] = useState(false);
 
-  // Qualifying Questions
-  const [qualifyingQuestions, setQualifyingQuestions] = useState<{[key: string]: string}>({});
-
   // Quote Builder
   const [clientName, setClientName] = useState('');
   const [clientEmail, setClientEmail] = useState('');
@@ -57,9 +54,6 @@ export default function QuoteDetailPage() {
           setQuote(data.quote);
           setStatus(data.quote.status);
           setNotes(data.quote.notes || '');
-
-          // Load qualifying questions
-          setQualifyingQuestions(data.quote.qualifyingQuestions || {});
 
           // Load quote builder data or auto-fill from client info
           if (data.quote.quoteBuilder) {
@@ -120,7 +114,6 @@ export default function QuoteDetailPage() {
         body: JSON.stringify({
           status,
           notes,
-          qualifyingQuestions,
           quoteBuilder,
         }),
       });
@@ -130,7 +123,7 @@ export default function QuoteDetailPage() {
         setTimeout(() => setSaved(false), 2000);
 
         // Update local quote state
-        setQuote({ ...quote, status, notes, qualifyingQuestions, quoteBuilder });
+        setQuote({ ...quote, status, notes, quoteBuilder });
       }
     } catch (error) {
       console.error('Failed to save quote:', error);
@@ -377,39 +370,6 @@ export default function QuoteDetailPage() {
     });
   };
 
-  // Service-specific qualifying questions
-  const qualifyingQuestionsConfig = {
-    design: [
-      { key: 'designStyle', label: 'Preferred design style?', type: 'text' },
-      { key: 'designInspiration', label: 'Design inspiration/examples?', type: 'textarea' },
-      { key: 'brandingNeeded', label: 'Do they need branding?', type: 'text' },
-    ],
-    development: [
-      { key: 'platformPreference', label: 'Platform preference?', type: 'text' },
-      { key: 'hostingProvider', label: 'Hosting details?', type: 'text' },
-      { key: 'technicalRequirements', label: 'Technical requirements?', type: 'textarea' },
-    ],
-    ecommerce: [
-      { key: 'numberOfProducts', label: 'Number of products?', type: 'text' },
-      { key: 'paymentMethods', label: 'Payment methods needed?', type: 'text' },
-      { key: 'shippingNeeds', label: 'Shipping requirements?', type: 'textarea' },
-    ],
-    customSoftware: [
-      { key: 'softwareType', label: 'Type of software?', type: 'text' },
-      { key: 'userCount', label: 'Expected users?', type: 'text' },
-      { key: 'integrations', label: 'Integrations needed?', type: 'textarea' },
-    ],
-    seo: [
-      { key: 'targetKeywords', label: 'Target keywords?', type: 'textarea' },
-      { key: 'localSeo', label: 'Local SEO needed?', type: 'text' },
-      { key: 'competitorWebsites', label: 'Competitor websites?', type: 'text' },
-    ],
-    maintenance: [
-      { key: 'maintenanceFrequency', label: 'How often do they need updates?', type: 'text' },
-      { key: 'supportLevel', label: 'Level of support needed?', type: 'text' },
-    ],
-  };
-
   if (loading) {
     return (
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -575,49 +535,6 @@ export default function QuoteDetailPage() {
             <p className="text-text-secondary leading-relaxed whitespace-pre-wrap">
               {quote.description}
             </p>
-          </div>
-
-          {/* QUALIFYING QUESTIONS */}
-          <div className="bg-bg-secondary border border-white/10 rounded-xl p-6">
-            <h2 className="text-xl font-semibold mb-4">Qualifying Questions</h2>
-            <p className="text-sm text-text-secondary mb-6">
-              Ask the client specific questions based on the services they selected.
-            </p>
-
-            <div className="space-y-6">
-              {Object.entries(qualifyingQuestionsConfig).map(([serviceKey, questions]) => {
-                const isServiceSelected = quote.services[serviceKey as keyof typeof quote.services];
-                if (!isServiceSelected) return null;
-
-                return (
-                  <div key={serviceKey} className="space-y-4 p-5 bg-white/5 rounded-lg border border-white/10">
-                    <h3 className="font-semibold text-accent-primary capitalize">{serviceKey.replace(/([A-Z])/g, ' $1').trim()}</h3>
-                    {questions.map((question) => (
-                      <div key={question.key}>
-                        <label className="block text-sm font-medium mb-2">{question.label}</label>
-                        {question.type === 'textarea' ? (
-                          <textarea
-                            value={qualifyingQuestions[question.key] || ''}
-                            onChange={(e) => setQualifyingQuestions({ ...qualifyingQuestions, [question.key]: e.target.value })}
-                            rows={3}
-                            className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none resize-none"
-                            placeholder="Enter response..."
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={qualifyingQuestions[question.key] || ''}
-                            onChange={(e) => setQualifyingQuestions({ ...qualifyingQuestions, [question.key]: e.target.value })}
-                            className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
-                            placeholder="Enter response..."
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
-            </div>
           </div>
 
           {/* QUOTE BUILDER */}
