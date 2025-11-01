@@ -8,9 +8,10 @@ import { QuoteStatus } from '@/lib/mock-quotes';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const db = getFirestoreAdmin();
     if (!db) {
       return NextResponse.json(
@@ -19,7 +20,7 @@ export async function GET(
       );
     }
 
-    const doc = await db.collection('quotes').doc(params.id).get();
+    const doc = await db.collection('quotes').doc(id).get();
 
     if (!doc.exists) {
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
@@ -49,9 +50,10 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const db = getFirestoreAdmin();
 
@@ -77,9 +79,9 @@ export async function PATCH(
     if (body.quotedAmount !== undefined)
       updateData.quotedAmount = body.quotedAmount;
 
-    await db.collection('quotes').doc(params.id).update(updateData);
+    await db.collection('quotes').doc(id).update(updateData);
 
-    console.log('✅ Quote updated:', params.id);
+    console.log('✅ Quote updated:', id);
 
     return NextResponse.json(
       {
@@ -103,9 +105,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const db = getFirestoreAdmin();
     if (!db) {
       return NextResponse.json(
@@ -114,9 +117,9 @@ export async function DELETE(
       );
     }
 
-    await db.collection('quotes').doc(params.id).delete();
+    await db.collection('quotes').doc(id).delete();
 
-    console.log('✅ Quote deleted:', params.id);
+    console.log('✅ Quote deleted:', id);
 
     return NextResponse.json(
       {
