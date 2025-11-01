@@ -455,7 +455,7 @@ export default function QuotePage() {
                               <li>You will receive a detailed quote via email</li>
                               <li>The quote will include pricing breakdown and timeline</li>
                               <li>We can schedule a call to discuss if needed</li>
-                              <li>No obligation�"take your time to review</li>
+                              <li>No obligation—take your time to review</li>
                             </ul>
                           </div>
                         </div>

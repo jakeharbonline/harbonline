@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -15,25 +15,36 @@ import {
   CheckCircle,
   Save,
   Download,
+  Plus,
+  Trash2,
+  Eye,
 } from 'lucide-react';
-import type { QuoteRequest, QuoteStatus } from '@/lib/mock-quotes';
+import type { QuoteRequest, QuoteStatus, QuoteLineItem } from '@/lib/mock-quotes';
 
 export default function QuoteDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const quoteId = params.id as string;
 
   const [quote, setQuote] = useState<QuoteRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<QuoteStatus>('new');
   const [notes, setNotes] = useState('');
-  const [quotedAmount, setQuotedAmount] = useState('');
   const [saved, setSaved] = useState(false);
 
-  // Quote builder fields
-  const [estimatedHours, setEstimatedHours] = useState('');
-  const [hourlyRate, setHourlyRate] = useState('50');
-  const [breakdown, setBreakdown] = useState<{service: string, hours: number}[]>([]);
+  // Qualifying Questions
+  const [qualifyingQuestions, setQualifyingQuestions] = useState<{[key: string]: string}>({});
+
+  // Quote Builder
+  const [clientName, setClientName] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
+  const [clientCompany, setClientCompany] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [lineItems, setLineItems] = useState<QuoteLineItem[]>([]);
+  const [discount, setDiscount] = useState(0);
+  const [discountType, setDiscountType] = useState<'percentage' | 'fixed'>('percentage');
+  const [tax, setTax] = useState(20); // Default 20% VAT
+  const [validUntil, setValidUntil] = useState('');
+  const [terms, setTerms] = useState('Payment due within 30 days of project completion.');
 
   // Fetch quote from Firebase
   useEffect(() => {
@@ -46,7 +57,34 @@ export default function QuoteDetailPage() {
           setQuote(data.quote);
           setStatus(data.quote.status);
           setNotes(data.quote.notes || '');
-          setQuotedAmount(data.quote.quotedAmount || '');
+
+          // Load qualifying questions
+          setQualifyingQuestions(data.quote.qualifyingQuestions || {});
+
+          // Load quote builder data or auto-fill from client info
+          if (data.quote.quoteBuilder) {
+            setClientName(data.quote.quoteBuilder.clientName);
+            setClientEmail(data.quote.quoteBuilder.clientEmail);
+            setClientCompany(data.quote.quoteBuilder.clientCompany || '');
+            setClientPhone(data.quote.quoteBuilder.clientPhone || '');
+            setLineItems(data.quote.quoteBuilder.lineItems || []);
+            setDiscount(data.quote.quoteBuilder.discount || 0);
+            setDiscountType(data.quote.quoteBuilder.discountType || 'percentage');
+            setTax(data.quote.quoteBuilder.tax || 20);
+            setValidUntil(data.quote.quoteBuilder.validUntil || '');
+            setTerms(data.quote.quoteBuilder.terms || 'Payment due within 30 days of project completion.');
+          } else {
+            // Auto-fill from quote request
+            setClientName(data.quote.name);
+            setClientEmail(data.quote.email);
+            setClientCompany(data.quote.company || '');
+            setClientPhone(data.quote.phone || '');
+
+            // Set default valid until (30 days from now)
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 30);
+            setValidUntil(futureDate.toISOString().split('T')[0]);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch quote:', error);
@@ -60,6 +98,21 @@ export default function QuoteDetailPage() {
   const handleSave = async () => {
     if (!quote) return;
 
+    const quoteBuilder = {
+      clientName,
+      clientEmail,
+      clientCompany,
+      clientPhone,
+      lineItems,
+      subtotal: calculateSubtotal(),
+      discount,
+      discountType,
+      tax,
+      total: calculateTotal(),
+      validUntil,
+      terms,
+    };
+
     try {
       const response = await fetch(`/api/quotes/${quoteId}`, {
         method: 'PATCH',
@@ -67,7 +120,8 @@ export default function QuoteDetailPage() {
         body: JSON.stringify({
           status,
           notes,
-          quotedAmount,
+          qualifyingQuestions,
+          quoteBuilder,
         }),
       });
 
@@ -76,11 +130,223 @@ export default function QuoteDetailPage() {
         setTimeout(() => setSaved(false), 2000);
 
         // Update local quote state
-        setQuote({ ...quote, status, notes, quotedAmount });
+        setQuote({ ...quote, status, notes, qualifyingQuestions, quoteBuilder });
       }
     } catch (error) {
       console.error('Failed to save quote:', error);
     }
+  };
+
+  const addLineItem = () => {
+    const newItem: QuoteLineItem = {
+      id: Date.now().toString(),
+      description: '',
+      hours: 0,
+      rate: 50,
+    };
+    setLineItems([...lineItems, newItem]);
+  };
+
+  const updateLineItem = (id: string, field: keyof QuoteLineItem, value: string | number) => {
+    setLineItems(lineItems.map(item =>
+      item.id === id ? { ...item, [field]: value } : item
+    ));
+  };
+
+  const removeLineItem = (id: string) => {
+    setLineItems(lineItems.filter(item => item.id !== id));
+  };
+
+  const calculateSubtotal = () => {
+    return lineItems.reduce((sum, item) => sum + (item.hours * item.rate), 0);
+  };
+
+  const calculateDiscount = () => {
+    const subtotal = calculateSubtotal();
+    if (discountType === 'percentage') {
+      return (subtotal * discount) / 100;
+    }
+    return discount;
+  };
+
+  const calculateTax = () => {
+    const subtotal = calculateSubtotal();
+    const discountAmount = calculateDiscount();
+    return ((subtotal - discountAmount) * tax) / 100;
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const discountAmount = calculateDiscount();
+    const taxAmount = calculateTax();
+    return subtotal - discountAmount + taxAmount;
+  };
+
+  const downloadQuote = () => {
+    if (!quote) return;
+
+    const subtotal = calculateSubtotal();
+    const discountAmount = calculateDiscount();
+    const taxAmount = calculateTax();
+    const total = calculateTotal();
+    const currentDate = new Date().toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+    .header { display: flex; justify-between; align-items: start; margin-bottom: 40px; border-bottom: 3px solid #6A00FF; padding-bottom: 20px; }
+    .header h1 { color: #6A00FF; margin: 0; font-size: 32px; }
+    .header p { color: #666; margin: 5px 0 0; }
+    .header-right { text-align: right; }
+    .section { margin-bottom: 30px; }
+    .section h2 { color: #6A00FF; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
+    .info-grid { display: grid; grid-template-columns: 150px 1fr; gap: 10px; margin-bottom: 15px; }
+    .info-label { font-weight: 600; color: #666; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th { background: #f9f9f9; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #666; font-weight: 600; }
+    td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+    .text-right { text-align: right; }
+    .summary { margin-top: 30px; }
+    .summary-table { width: 300px; margin-left: auto; }
+    .summary-table td { padding: 8px; }
+    .summary-table .total { font-size: 24px; font-weight: bold; color: #6A00FF; border-top: 2px solid #6A00FF; padding-top: 12px; }
+    .terms { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-top: 30px; }
+    .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; color: #666; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Harbonline</h1>
+      <p>Professional Web Development & Design</p>
+      <p style="margin-top: 10px; font-size: 14px;">jake@harbonline.co.uk | www.harbonline.co.uk</p>
+    </div>
+    <div class="header-right">
+      <h2 style="color: #6A00FF; margin: 0;">QUOTATION</h2>
+      <p style="margin: 5px 0 0; font-size: 14px;">Date: ${currentDate}</p>
+      ${validUntil ? `<p style="margin: 5px 0 0; font-size: 14px;">Valid Until: ${new Date(validUntil).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>` : ''}
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Client Information</h2>
+    <div class="info-grid">
+      <div class="info-label">Name:</div>
+      <div>${clientName}</div>
+      ${clientCompany ? `<div class="info-label">Company:</div><div>${clientCompany}</div>` : ''}
+      <div class="info-label">Email:</div>
+      <div>${clientEmail}</div>
+      ${clientPhone ? `<div class="info-label">Phone:</div><div>${clientPhone}</div>` : ''}
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Project Overview</h2>
+    <div class="info-grid">
+      <div class="info-label">Project Type:</div>
+      <div style="text-transform: capitalize;">${quote.projectType.replace('-', ' ')}</div>
+      <div class="info-label">Timeline:</div>
+      <div style="text-transform: capitalize;">${quote.timeline.replace('-', ' to ')}</div>
+    </div>
+    <p style="margin-top: 15px;"><strong>Description:</strong></p>
+    <p style="white-space: pre-wrap;">${quote.description}</p>
+  </div>
+
+  ${lineItems.length > 0 ? `
+  <div class="section">
+    <h2>Quote Breakdown</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="text-right">Hours</th>
+          <th class="text-right">Rate</th>
+          <th class="text-right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${lineItems.map(item => `
+          <tr>
+            <td>${item.description}</td>
+            <td class="text-right">${item.hours}h</td>
+            <td class="text-right">£${item.rate.toFixed(2)}/hr</td>
+            <td class="text-right">£${(item.hours * item.rate).toFixed(2)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div class="summary">
+      <table class="summary-table">
+        <tr>
+          <td>Subtotal:</td>
+          <td class="text-right">£${subtotal.toFixed(2)}</td>
+        </tr>
+        ${discount > 0 ? `
+        <tr>
+          <td>Discount (${discountType === 'percentage' ? discount + '%' : '£' + discount}):</td>
+          <td class="text-right">-£${discountAmount.toFixed(2)}</td>
+        </tr>
+        ` : ''}
+        ${tax > 0 ? `
+        <tr>
+          <td>VAT (${tax}%):</td>
+          <td class="text-right">£${taxAmount.toFixed(2)}</td>
+        </tr>
+        ` : ''}
+        <tr>
+          <td class="total">Total:</td>
+          <td class="text-right total">£${total.toFixed(2)}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  ` : ''}
+
+  ${terms ? `
+  <div class="terms">
+    <h3 style="margin: 0 0 10px; color: #6A00FF;">Terms & Conditions</h3>
+    <p style="margin: 0; white-space: pre-wrap;">${terms}</p>
+  </div>
+  ` : ''}
+
+  <div class="footer">
+    <p>Harbonline | jake@harbonline.co.uk | www.harbonline.co.uk</p>
+    <p>Thank you for considering Harbonline for your project.</p>
+  </div>
+</body>
+</html>
+    `;
+
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Quote_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const getSelectedServices = () => {
+    if (!quote) return [];
+    const services = [];
+    if (quote.services.design) services.push('Web Design');
+    if (quote.services.development) services.push('Web Development');
+    if (quote.services.ecommerce) services.push('E-Commerce');
+    if (quote.services.customSoftware) services.push('Custom Software');
+    if (quote.services.seo) services.push('SEO');
+    if (quote.services.maintenance) services.push('Maintenance & Support');
+    return services;
   };
 
   const getStatusColor = (status: string) => {
@@ -111,218 +377,37 @@ export default function QuoteDetailPage() {
     });
   };
 
-  const getSelectedServices = () => {
-    if (!quote) return [];
-    const services = [];
-    if (quote.services.design) services.push('Web Design');
-    if (quote.services.development) services.push('Web Development');
-    if (quote.services.ecommerce) services.push('E-Commerce');
-    if (quote.services.customSoftware) services.push('Custom Software');
-    if (quote.services.seo) services.push('SEO');
-    if (quote.services.maintenance) services.push('Maintenance & Support');
-    return services;
-  };
-
-  // Calculate estimated hours based on services
-  const calculateEstimatedHours = () => {
-    if (!quote) return { total: 0, breakdown: [] };
-
-    const hourEstimates: {[key: string]: number} = {
-      design: 40,
-      development: 80,
-      ecommerce: 120,
-      customSoftware: 160,
-      seo: 20,
-      maintenance: 10,
-    };
-
-    const breakdown: {service: string, hours: number}[] = [];
-    let total = 0;
-
-    if (quote.services.design) {
-      breakdown.push({ service: 'Web Design', hours: hourEstimates.design });
-      total += hourEstimates.design;
-    }
-    if (quote.services.development) {
-      breakdown.push({ service: 'Web Development', hours: hourEstimates.development });
-      total += hourEstimates.development;
-    }
-    if (quote.services.ecommerce) {
-      breakdown.push({ service: 'E-Commerce Integration', hours: hourEstimates.ecommerce });
-      total += hourEstimates.ecommerce;
-    }
-    if (quote.services.customSoftware) {
-      breakdown.push({ service: 'Custom Software', hours: hourEstimates.customSoftware });
-      total += hourEstimates.customSoftware;
-    }
-    if (quote.services.seo) {
-      breakdown.push({ service: 'SEO Setup', hours: hourEstimates.seo });
-      total += hourEstimates.seo;
-    }
-    if (quote.services.maintenance) {
-      breakdown.push({ service: 'Maintenance & Support (monthly)', hours: hourEstimates.maintenance });
-      total += hourEstimates.maintenance;
-    }
-
-    return { total, breakdown };
-  };
-
-  // Auto-calculate on quote load
-  useEffect(() => {
-    if (quote) {
-      const { total, breakdown: calc } = calculateEstimatedHours();
-      setEstimatedHours(total.toString());
-      setBreakdown(calc);
-
-      // Auto-calculate quoted amount
-      const rate = parseFloat(hourlyRate) || 50;
-      const amount = total * rate;
-      if (!quotedAmount) {
-        setQuotedAmount(`£${amount.toLocaleString()}`);
-      }
-    }
-  }, [quote]);
-
-  const generateQuotationDocument = () => {
-    if (!quote) return;
-
-    const services = getSelectedServices();
-    const currentDate = new Date().toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-
-    // Create HTML document
-    const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-    .header { text-align: center; margin-bottom: 40px; border-bottom: 3px solid #6A00FF; padding-bottom: 20px; }
-    .header h1 { color: #6A00FF; margin: 0; font-size: 32px; }
-    .header p { color: #666; margin: 5px 0 0; }
-    .section { margin-bottom: 30px; }
-    .section h2 { color: #6A00FF; font-size: 20px; margin-bottom: 15px; border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; }
-    .info-grid { display: grid; grid-template-columns: 150px 1fr; gap: 10px; margin-bottom: 15px; }
-    .info-label { font-weight: 600; color: #666; }
-    .services { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .service-tag { background: #f0e6ff; color: #6A00FF; padding: 6px 12px; border-radius: 4px; font-size: 14px; }
-    .amount { background: #f0f0f0; padding: 20px; border-radius: 8px; text-align: center; margin: 30px 0; }
-    .amount h3 { margin: 0 0 10px; color: #666; font-size: 16px; }
-    .amount p { font-size: 36px; font-weight: bold; color: #6A00FF; margin: 0; }
-    .description { background: #f9f9f9; padding: 20px; border-radius: 8px; white-space: pre-wrap; }
-    .footer { margin-top: 50px; padding-top: 20px; border-top: 2px solid #f0f0f0; text-align: center; color: #666; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>Harbonline</h1>
-    <p>Professional Web Development & Design</p>
-  </div>
-
-  <div class="section">
-    <h2>Quotation</h2>
-    <div class="info-grid">
-      <div class="info-label">Quote Date:</div>
-      <div>${currentDate}</div>
-      <div class="info-label">Client Name:</div>
-      <div>${quote.name}</div>
-      ${quote.company ? `<div class="info-label">Company:</div><div>${quote.company}</div>` : ''}
-      <div class="info-label">Email:</div>
-      <div>${quote.email}</div>
-      ${quote.phone ? `<div class="info-label">Phone:</div><div>${quote.phone}</div>` : ''}
-    </div>
-  </div>
-
-  <div class="section">
-    <h2>Project Overview</h2>
-    <div class="info-grid">
-      <div class="info-label">Project Type:</div>
-      <div style="text-transform: capitalize;">${quote.projectType.replace('-', ' ')}</div>
-      <div class="info-label">Timeline:</div>
-      <div style="text-transform: capitalize;">${quote.timeline.replace('-', ' to ')}</div>
-      <div class="info-label">Budget Range:</div>
-      <div style="text-transform: capitalize;">${quote.budget}</div>
-    </div>
-    <div style="margin-top: 15px;">
-      <div class="info-label">Services Required:</div>
-      <div class="services">
-        ${services.map(s => `<span class="service-tag">${s}</span>`).join('')}
-      </div>
-    </div>
-  </div>
-
-  ${breakdown.length > 0 ? `
-  <div class="section">
-    <h2>Work Breakdown</h2>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-      <thead>
-        <tr style="border-bottom: 2px solid #f0f0f0;">
-          <th style="text-align: left; padding: 12px 8px; color: #666;">Service</th>
-          <th style="text-align: right; padding: 12px 8px; color: #666;">Estimated Hours</th>
-          <th style="text-align: right; padding: 12px 8px; color: #666;">Rate</th>
-          <th style="text-align: right; padding: 12px 8px; color: #666;">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${breakdown.map(item => `
-          <tr style="border-bottom: 1px solid #f0f0f0;">
-            <td style="padding: 12px 8px;">${item.service}</td>
-            <td style="text-align: right; padding: 12px 8px;">${item.hours}h</td>
-            <td style="text-align: right; padding: 12px 8px;">£${hourlyRate}/hr</td>
-            <td style="text-align: right; padding: 12px 8px;">£${(item.hours * parseFloat(hourlyRate)).toLocaleString()}</td>
-          </tr>
-        `).join('')}
-        <tr style="font-weight: bold; background: #f9f9f9;">
-          <td style="padding: 12px 8px;" colspan="2">Total</td>
-          <td style="text-align: right; padding: 12px 8px;">${estimatedHours}h</td>
-          <td style="text-align: right; padding: 12px 8px; color: #6A00FF;">£${((parseFloat(estimatedHours) || 0) * (parseFloat(hourlyRate) || 0)).toLocaleString()}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  ` : ''}
-
-  ${quotedAmount ? `
-  <div class="amount">
-    <h3>Final Quoted Amount</h3>
-    <p>${quotedAmount}</p>
-  </div>
-  ` : ''}
-
-  <div class="section">
-    <h2>Project Description</h2>
-    <div class="description">${quote.description}</div>
-  </div>
-
-  ${notes ? `
-  <div class="section">
-    <h2>Additional Notes</h2>
-    <div class="description">${notes}</div>
-  </div>
-  ` : ''}
-
-  <div class="footer">
-    <p>Harbonline | jake@harbonline.co.uk | www.harbonline.co.uk</p>
-    <p>This quotation is valid for 30 days from the date above.</p>
-  </div>
-</body>
-</html>
-    `;
-
-    // Create a blob and download
-    const blob = new Blob([htmlContent], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Quotation_${quote.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.html`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  // Service-specific qualifying questions
+  const qualifyingQuestionsConfig = {
+    design: [
+      { key: 'designStyle', label: 'Preferred design style?', type: 'text' },
+      { key: 'designInspiration', label: 'Design inspiration/examples?', type: 'textarea' },
+      { key: 'brandingNeeded', label: 'Do they need branding?', type: 'text' },
+    ],
+    development: [
+      { key: 'platformPreference', label: 'Platform preference?', type: 'text' },
+      { key: 'hostingProvider', label: 'Hosting details?', type: 'text' },
+      { key: 'technicalRequirements', label: 'Technical requirements?', type: 'textarea' },
+    ],
+    ecommerce: [
+      { key: 'numberOfProducts', label: 'Number of products?', type: 'text' },
+      { key: 'paymentMethods', label: 'Payment methods needed?', type: 'text' },
+      { key: 'shippingNeeds', label: 'Shipping requirements?', type: 'textarea' },
+    ],
+    customSoftware: [
+      { key: 'softwareType', label: 'Type of software?', type: 'text' },
+      { key: 'userCount', label: 'Expected users?', type: 'text' },
+      { key: 'integrations', label: 'Integrations needed?', type: 'textarea' },
+    ],
+    seo: [
+      { key: 'targetKeywords', label: 'Target keywords?', type: 'textarea' },
+      { key: 'localSeo', label: 'Local SEO needed?', type: 'text' },
+      { key: 'competitorWebsites', label: 'Competitor websites?', type: 'text' },
+    ],
+    maintenance: [
+      { key: 'maintenanceFrequency', label: 'How often do they need updates?', type: 'text' },
+      { key: 'supportLevel', label: 'Level of support needed?', type: 'text' },
+    ],
   };
 
   if (loading) {
@@ -430,7 +515,7 @@ export default function QuoteDetailPage() {
             </div>
           </div>
 
-          {/* Project Type & Requirements */}
+          {/* Project Overview */}
           <div className="bg-bg-secondary border border-white/10 rounded-xl p-6">
             <h2 className="text-xl font-semibold mb-4">Project Overview</h2>
 
@@ -491,6 +576,308 @@ export default function QuoteDetailPage() {
               {quote.description}
             </p>
           </div>
+
+          {/* QUALIFYING QUESTIONS */}
+          <div className="bg-bg-secondary border border-white/10 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">Qualifying Questions</h2>
+            <p className="text-sm text-text-secondary mb-6">
+              Ask the client specific questions based on the services they selected.
+            </p>
+
+            <div className="space-y-6">
+              {Object.entries(qualifyingQuestionsConfig).map(([serviceKey, questions]) => {
+                const isServiceSelected = quote.services[serviceKey as keyof typeof quote.services];
+                if (!isServiceSelected) return null;
+
+                return (
+                  <div key={serviceKey} className="space-y-4 p-5 bg-white/5 rounded-lg border border-white/10">
+                    <h3 className="font-semibold text-accent-primary capitalize">{serviceKey.replace(/([A-Z])/g, ' $1').trim()}</h3>
+                    {questions.map((question) => (
+                      <div key={question.key}>
+                        <label className="block text-sm font-medium mb-2">{question.label}</label>
+                        {question.type === 'textarea' ? (
+                          <textarea
+                            value={qualifyingQuestions[question.key] || ''}
+                            onChange={(e) => setQualifyingQuestions({ ...qualifyingQuestions, [question.key]: e.target.value })}
+                            rows={3}
+                            className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none resize-none"
+                            placeholder="Enter response..."
+                          />
+                        ) : (
+                          <input
+                            type="text"
+                            value={qualifyingQuestions[question.key] || ''}
+                            onChange={(e) => setQualifyingQuestions({ ...qualifyingQuestions, [question.key]: e.target.value })}
+                            className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                            placeholder="Enter response..."
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* QUOTE BUILDER */}
+          <div className="bg-bg-secondary border border-white/10 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-4">Quote Builder</h2>
+
+            {/* Client Info (Editable) */}
+            <div className="space-y-4 mb-6 p-5 bg-white/5 rounded-lg">
+              <h3 className="font-semibold text-accent-primary">Client Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Client Name</label>
+                  <input
+                    type="text"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Client Email</label>
+                  <input
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Company (Optional)</label>
+                  <input
+                    type="text"
+                    value={clientCompany}
+                    onChange={(e) => setClientCompany(e.target.value)}
+                    className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Phone (Optional)</label>
+                  <input
+                    type="tel"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Line Items */}
+            <div className="space-y-4 mb-6">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold text-accent-primary">Line Items</h3>
+                <button
+                  onClick={addLineItem}
+                  className="px-4 py-2 bg-accent-primary hover:bg-accent-primary-hover text-white rounded-lg text-sm flex items-center gap-2 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Item
+                </button>
+              </div>
+
+              {lineItems.length === 0 ? (
+                <div className="text-center py-8 bg-white/5 rounded-lg">
+                  <p className="text-text-secondary">No line items yet. Click "Add Item" to start building your quote.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {lineItems.map((item) => (
+                    <div key={item.id} className="p-4 bg-white/5 rounded-lg border border-white/10">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+                        <div className="md:col-span-5">
+                          <input
+                            type="text"
+                            value={item.description}
+                            onChange={(e) => updateLineItem(item.id, 'description', e.target.value)}
+                            placeholder="Description (e.g., Homepage Design)"
+                            className="w-full px-3 py-2 bg-bg-tertiary rounded border border-white/10 focus:border-accent-primary outline-none text-sm"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <input
+                            type="number"
+                            value={item.hours}
+                            onChange={(e) => updateLineItem(item.id, 'hours', parseFloat(e.target.value) || 0)}
+                            placeholder="Hours"
+                            min="0"
+                            step="0.5"
+                            className="w-full px-3 py-2 bg-bg-tertiary rounded border border-white/10 focus:border-accent-primary outline-none text-sm"
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <input
+                            type="number"
+                            value={item.rate}
+                            onChange={(e) => updateLineItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                            placeholder="Rate"
+                            min="0"
+                            step="1"
+                            className="w-full px-3 py-2 bg-bg-tertiary rounded border border-white/10 focus:border-accent-primary outline-none text-sm"
+                          />
+                        </div>
+                        <div className="md:col-span-2 flex items-center gap-2">
+                          <span className="text-sm font-medium">£{(item.hours * item.rate).toFixed(2)}</span>
+                          <button
+                            onClick={() => removeLineItem(item.id)}
+                            className="ml-auto p-2 hover:bg-red-500/10 text-red-400 rounded transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Discount & Tax */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Discount</label>
+                <input
+                  type="number"
+                  value={discount}
+                  onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                  min="0"
+                  step="1"
+                  className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Discount Type</label>
+                <select
+                  value={discountType}
+                  onChange={(e) => setDiscountType(e.target.value as 'percentage' | 'fixed')}
+                  className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed (£)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">VAT (%)</label>
+                <input
+                  type="number"
+                  value={tax}
+                  onChange={(e) => setTax(parseFloat(e.target.value) || 0)}
+                  min="0"
+                  max="100"
+                  step="1"
+                  className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Valid Until & Terms */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Valid Until</label>
+                <input
+                  type="date"
+                  value={validUntil}
+                  onChange={(e) => setValidUntil(e.target.value)}
+                  className="w-full px-4 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Terms & Conditions</label>
+              <textarea
+                value={terms}
+                onChange={(e) => setTerms(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none resize-none"
+              />
+            </div>
+          </div>
+
+          {/* QUOTE PREVIEW */}
+          {lineItems.length > 0 && (
+            <div className="bg-bg-secondary border border-white/10 rounded-xl p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Quote Preview</h2>
+                <Eye className="w-5 h-5 text-text-secondary" />
+              </div>
+
+              <div className="bg-white text-black p-8 rounded-lg">
+                {/* Header */}
+                <div className="flex justify-between items-start mb-8 border-b-2 border-purple-600 pb-4">
+                  <div>
+                    <h1 className="text-3xl font-bold text-purple-600">Harbonline</h1>
+                    <p className="text-sm text-gray-600">Professional Web Development & Design</p>
+                  </div>
+                  <div className="text-right">
+                    <h2 className="text-xl font-bold text-purple-600">QUOTATION</h2>
+                    <p className="text-sm text-gray-600">{new Date().toLocaleDateString('en-GB')}</p>
+                  </div>
+                </div>
+
+                {/* Client Info */}
+                <div className="mb-6">
+                  <h3 className="font-semibold text-purple-600 mb-2">Client Information</h3>
+                  <p className="text-sm">{clientName}</p>
+                  {clientCompany && <p className="text-sm">{clientCompany}</p>}
+                  <p className="text-sm">{clientEmail}</p>
+                  {clientPhone && <p className="text-sm">{clientPhone}</p>}
+                </div>
+
+                {/* Line Items */}
+                <table className="w-full mb-6">
+                  <thead>
+                    <tr className="border-b border-gray-300">
+                      <th className="text-left py-2 text-sm text-gray-600">Description</th>
+                      <th className="text-right py-2 text-sm text-gray-600">Hours</th>
+                      <th className="text-right py-2 text-sm text-gray-600">Rate</th>
+                      <th className="text-right py-2 text-sm text-gray-600">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lineItems.map((item) => (
+                      <tr key={item.id} className="border-b border-gray-200">
+                        <td className="py-2 text-sm">{item.description}</td>
+                        <td className="text-right py-2 text-sm">{item.hours}h</td>
+                        <td className="text-right py-2 text-sm">£{item.rate.toFixed(2)}/hr</td>
+                        <td className="text-right py-2 text-sm">£{(item.hours * item.rate).toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Totals */}
+                <div className="flex justify-end">
+                  <div className="w-64">
+                    <div className="flex justify-between py-2 text-sm">
+                      <span>Subtotal:</span>
+                      <span>£{calculateSubtotal().toFixed(2)}</span>
+                    </div>
+                    {discount > 0 && (
+                      <div className="flex justify-between py-2 text-sm">
+                        <span>Discount ({discountType === 'percentage' ? discount + '%' : '£' + discount}):</span>
+                        <span>-£{calculateDiscount().toFixed(2)}</span>
+                      </div>
+                    )}
+                    {tax > 0 && (
+                      <div className="flex justify-between py-2 text-sm">
+                        <span>VAT ({tax}%):</span>
+                        <span>£{calculateTax().toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between py-3 text-lg font-bold border-t-2 border-purple-600 mt-2">
+                      <span className="text-purple-600">Total:</span>
+                      <span className="text-purple-600">£{calculateTotal().toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Management */}
@@ -514,66 +901,6 @@ export default function QuoteDetailPage() {
                   <option value="accepted">Accepted</option>
                   <option value="declined">Declined</option>
                 </select>
-              </div>
-
-              {/* Quote Builder */}
-              <div className="pt-4 border-t border-white/10">
-                <h3 className="text-sm font-semibold mb-3 text-accent-primary">Quote Calculator</h3>
-
-                {/* Hours Breakdown */}
-                <div className="mb-3">
-                  <label className="block text-xs font-medium mb-2 text-text-secondary">Estimated Hours Breakdown</label>
-                  <div className="space-y-2 bg-bg-tertiary/50 rounded-lg p-3">
-                    {breakdown.map((item, index) => (
-                      <div key={index} className="flex justify-between text-sm">
-                        <span className="text-text-secondary">{item.service}</span>
-                        <span className="font-medium">{item.hours}h</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between text-sm font-semibold pt-2 border-t border-white/10">
-                      <span>Total Hours</span>
-                      <span className="text-accent-primary">{estimatedHours}h</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Hourly Rate */}
-                <div className="mb-3">
-                  <label className="block text-xs font-medium mb-2 text-text-secondary">Hourly Rate</label>
-                  <input
-                    type="number"
-                    value={hourlyRate}
-                    onChange={(e) => {
-                      setHourlyRate(e.target.value);
-                      const hours = parseFloat(estimatedHours) || 0;
-                      const rate = parseFloat(e.target.value) || 0;
-                      setQuotedAmount(`£${(hours * rate).toLocaleString()}`);
-                    }}
-                    placeholder="50"
-                    className="w-full px-3 py-2 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none text-sm"
-                  />
-                </div>
-
-                {/* Calculated Total Preview */}
-                <div className="bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10 border border-accent-primary/20 rounded-lg p-3">
-                  <div className="text-xs text-text-secondary mb-1">Calculated Amount</div>
-                  <div className="text-2xl font-bold text-accent-primary">
-                    £{((parseFloat(estimatedHours) || 0) * (parseFloat(hourlyRate) || 0)).toLocaleString()}
-                  </div>
-                </div>
-              </div>
-
-              {/* Quoted Amount */}
-              <div className="pt-4">
-                <label className="block text-sm font-medium mb-2">Final Quoted Amount</label>
-                <input
-                  type="text"
-                  value={quotedAmount}
-                  onChange={(e) => setQuotedAmount(e.target.value)}
-                  placeholder="e.g. £5,000"
-                  className="w-full px-4 py-3 bg-bg-tertiary rounded-lg border border-white/10 focus:border-accent-primary outline-none"
-                />
-                <p className="text-xs text-text-secondary mt-1">You can override the calculated amount</p>
               </div>
 
               {/* Notes */}
@@ -606,14 +933,16 @@ export default function QuoteDetailPage() {
                 )}
               </button>
 
-              {/* Generate Quotation */}
-              <button
-                onClick={generateQuotationDocument}
-                className="w-full px-6 py-3 bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-90 text-white font-semibold rounded-lg transition-opacity flex items-center justify-center gap-2"
-              >
-                <Download className="w-5 h-5" />
-                Download Quotation
-              </button>
+              {/* Download Quote Button */}
+              {lineItems.length > 0 && (
+                <button
+                  onClick={downloadQuote}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-90 text-white font-semibold rounded-lg transition-opacity flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  Download Quote
+                </button>
+              )}
 
               {/* Quick Actions */}
               <div className="pt-4 border-t border-white/10 space-y-2">

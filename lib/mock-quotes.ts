@@ -3,15 +3,20 @@
 
 export type QuoteStatus = 'new' | 'reviewed' | 'quoted' | 'accepted' | 'declined';
 
+export interface QuoteLineItem {
+  id: string;
+  description: string;
+  hours: number;
+  rate: number;
+}
+
 export interface QuoteRequest {
   id: string;
   status: QuoteStatus;
   createdAt: string;
 
-  // Step 1: Project Type
+  // Client Information (from public form)
   projectType: string;
-
-  // Step 2: Requirements
   services: {
     design: boolean;
     development: boolean;
@@ -20,20 +25,35 @@ export interface QuoteRequest {
     seo: boolean;
     maintenance: boolean;
   };
-
-  // Step 3: Project Details
   timeline: string;
   budget: string;
   hasContent: string;
-
-  // Step 4: About You
   name: string;
   email: string;
   phone: string;
   company: string;
-
-  // Step 5: Tell More
   description: string;
+
+  // Admin-Only: Qualifying Questions
+  qualifyingQuestions?: {
+    [key: string]: string; // Dynamic questions based on selected services
+  };
+
+  // Admin-Only: Quote Builder
+  quoteBuilder?: {
+    clientName: string;
+    clientEmail: string;
+    clientCompany?: string;
+    clientPhone?: string;
+    lineItems: QuoteLineItem[];
+    subtotal: number;
+    discount?: number;
+    discountType?: 'percentage' | 'fixed';
+    tax?: number;
+    total: number;
+    validUntil?: string;
+    terms?: string;
+  };
 
   // Admin fields
   notes?: string;
