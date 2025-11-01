@@ -4,6 +4,7 @@ import { Section } from '@/components/Section';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { MotionReveal } from '@/components/MotionReveal';
+import { FAQ } from '@/components/FAQ';
 import { ServiceSchema, BreadcrumbSchema } from '@/components/StructuredData';
 import { MapPin, Code, Palette, ShoppingCart, TrendingUp, ArrowRight, CheckCircle } from 'lucide-react';
 import type { LocationData } from '@/lib/location-data';
@@ -177,6 +178,31 @@ export function LocationPageTemplate({ location }: LocationPageTemplateProps) {
               </div>
             </MotionReveal>
           </div>
+        </Section>
+
+        {/* FAQ Section */}
+        <Section background="secondary" spacing="normal">
+          <FAQ
+            title={`Web Design FAQs for ${location.name} Businesses`}
+            faqs={[
+              {
+                question: 'How long does a typical website take to build?',
+                answer: 'Small sites typically take 2–4 weeks from initial consultation to launch. Larger projects with custom features or e-commerce functionality may take 6–8 weeks. Timelines are confirmed after a short discovery call where we discuss your specific requirements.',
+              },
+              {
+                question: 'Do you handle copywriting and images?',
+                answer: 'Yes — I can provide copywriting support and source licensed imagery for your site, or work with your existing content and brand assets. Many clients prefer a collaborative approach where we refine their ideas together.',
+              },
+              {
+                question: 'What about ongoing SEO and maintenance?',
+                answer: 'I offer monthly SEO and care plans to keep your site fast, secure, and visible in search results. This includes performance monitoring, security updates, content changes, and ongoing SEO optimisation to help you rank higher locally.',
+              },
+              {
+                question: 'Do you work with WordPress or modern frameworks like Next.js?',
+                answer: 'Yes — I support both traditional CMS platforms like WordPress and modern frameworks including Next.js, React, and other cutting-edge technologies. The choice depends on your specific needs, budget, and long-term goals.',
+              },
+            ]}
+          />
         </Section>
 
         {/* CTA Section */}

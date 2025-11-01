@@ -11,8 +11,8 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Local Web Design & Development Services | West Sussex & Brighton',
-  description: 'Professional web design and development services across West Sussex and Brighton. Serving Chichester, Bognor Regis, Littlehampton, Worthing, and Brighton with local support.',
+  title: 'Areas We Serve | Harbonline',
+  description: 'Local web design & SEO across West Sussex — Arundel, Selsey, Chichester, Bognor Regis, Littlehampton, Worthing, and Brighton.',
   keywords: [
     'web design West Sussex',
     'web development Brighton',
@@ -21,16 +21,19 @@ export const metadata: Metadata = {
     'Bognor Regis web design',
     'Littlehampton website design',
     'Worthing web development',
+    'Arundel web design',
+    'Selsey web developer',
   ],
   openGraph: {
-    title: 'Local Web Design Services | West Sussex & Brighton | Harbonline',
-    description: 'Professional web design and development services across West Sussex and Brighton.',
+    title: 'Areas We Serve | Harbonline',
+    description: 'Local web design & SEO across West Sussex — Arundel, Selsey, and more.',
+    url: 'https://harbonline.co.uk/locations',
     siteName: 'Harbonline',
     locale: 'en_GB',
     type: 'website',
   },
   alternates: {
-    canonical: '/locations',
+    canonical: 'https://harbonline.co.uk/locations',
   },
 };
 

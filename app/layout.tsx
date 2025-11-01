@@ -126,6 +126,8 @@ export default function RootLayout({
               'Littlehampton',
               'Worthing',
               'Brighton',
+              'Arundel',
+              'Selsey',
               'West Sussex',
             ],
             priceRange: '££',
